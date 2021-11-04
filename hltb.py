@@ -18,10 +18,12 @@ def get_minutes(time_unit):
 def get_time(time, time_unit):
     if time == -1 or time_unit == None:
         return -1
-    if type(time) is int:
-        return time * get_minutes(time_unit)
-    else: # type(time) is str
-        return 0 # TODO
+    if type(time) is str:
+        if '½' in time:
+            time = int(time[:len(time) -1]) + 0.5
+        else:
+            time = int(time)
+    return time * get_minutes(time_unit)
 
 def get_game_entry_from_hltb(hltb, name):
     results = hltb.search(name, similarity_case_sensitive=False)
@@ -31,14 +33,10 @@ def get_game_entry_from_hltb(hltb, name):
         return results[0]
 
 def add_game(games, index, game_entry):
-    main_time          = get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         )
-    extra_time         = get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   )
-    completionist_time = get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit)
+    games.at[index, 'main_time'         ] = get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         )
+    games.at[index, 'extra_time'        ] = get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   )
+    games.at[index, 'completionist_time'] = get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit)
     
-    games.at[index, 'main_time'         ] = main_time
-    games.at[index, 'extra_time'        ] = extra_time
-    games.at[index, 'completionist_time'] = completionist_time
-
     return games
 
 def add_new_columns(games):
@@ -60,7 +58,6 @@ def main():
     games = pd.read_csv('data/steam_processed.csv')
     some_games = games.head()
     some_games = get_time_for_some_games(some_games)
-    print(some_games)
 
 if __name__ == '__main__':
     main()
