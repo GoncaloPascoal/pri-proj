@@ -17,7 +17,7 @@ def get_minutes(time_unit):
 
 def get_time(time, time_unit):
     if time == -1 or time_unit == None:
-        return -1
+        return None
     if type(time) is str:
         if '½' in time:
             time = int(time[:len(time) -1]) + 0.5
@@ -32,12 +32,13 @@ def get_game_entry_from_hltb(hltb, name):
     else:
         return results[0]
 
-def add_game(games, index, game_entry):
-    games.at[index, 'main_time'         ] = get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         )
-    games.at[index, 'extra_time'        ] = get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   )
-    games.at[index, 'completionist_time'] = get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit)
-    
-    return games
+def add_game(games, id, game_entry):
+    return games.append({
+        'appid': id,
+        'main_time' : get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         ),
+        'extra_time' : get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   ),
+        'completionist_time': get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit)
+    }, ignore_index=True)
 
 def add_new_columns(games):
     games.insert(len(games), 'main_time'         , -1)
@@ -45,19 +46,19 @@ def add_new_columns(games):
     games.insert(len(games), 'completionist_time', -1)
     return games
 
-def get_time_for_some_games(games):
+def get_gameplay_times(games):
     hltb = HowLongToBeat(1.0)
-    games = add_new_columns(games)
-    for index in range(len(games)):
-        name = games.loc[index]['name']
-        game_entry = get_game_entry_from_hltb(hltb, name)
-        games = add_game(games, index, game_entry)
-    return games
+    game_entries = pd.DataFrame()
+    for _, row in games.iterrows():
+        game_entry = get_game_entry_from_hltb(hltb, row['name'])
+        game_entries = add_game(game_entries, row['appid'], game_entry)
+    return game_entries
 
 def main():
     games = pd.read_csv('data/steam_processed.csv')
-    some_games = games.head()
-    some_games = get_time_for_some_games(some_games)
+    games = games.head()
+    games = get_gameplay_times(games)
+    games.to_csv('data/gameplay_times.csv', index=False)
 
 if __name__ == '__main__':
     main()
