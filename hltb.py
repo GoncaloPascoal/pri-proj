@@ -27,37 +27,38 @@ def get_game_entry_from_hltb(hltb, name):
     else:
         return results[0]
 
-def add_times_to_games(games, game_entries):
-    return games.merge(right=game_entries, left_on='appid', right_on='appid')
-
-def add_game_entry(game_entries, game_entry):
+def add_game(games, index, game_entry):
     main_time          = get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         )
     extra_time         = get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   )
     completionist_time = get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit)
     
-    game_entries = game_entries.append({
-        'main_time': main_time,
-        'extra_time': extra_time,
-        'completionist_time': completionist_time
-    }, ignore_index=True)
+    games.at[index, 'main_time'         ] = main_time
+    games.at[index, 'extra_time'        ] = extra_time
+    games.at[index, 'completionist_time'] = completionist_time
+    
+    return games
 
-    return game_entries
+def add_new_columns(games):
+    games.insert(len(games), 'main_time'         , -1)
+    games.insert(len(games), 'extra_time'        , -1)
+    games.insert(len(games), 'completionist_time', -1)
+    return games
 
 def get_time_for_some_games(games):
     hltb = HowLongToBeat(1.0)
-    game_entries = pd.DataFrame()
+    games = add_new_columns(games)
     for index in range(len(games)):
         name = games.loc[index]['name']
         game_entry = get_game_entry_from_hltb(hltb, name)
-        game_entries = add_game_entry(game_entries, game_entry)
-    #return add_times_to_games(games, game_entries)
+        games = add_game(games, index, game_entry)
+    return games
 
 def main():
     games = pd.read_csv('data/steam_processed.csv')
     some_games = games.head()
-    print(some_games)
+    #print(some_games)
     some_games = get_time_for_some_games(some_games)
-    print(some_games)
+    #print(some_games)
 
 if __name__ == '__main__':
     main()
