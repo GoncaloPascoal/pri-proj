@@ -1,5 +1,4 @@
 import requests
-import json
 import pandas as pd
 
 def parse_page(game_id):
