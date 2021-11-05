@@ -13,7 +13,7 @@ def parse_page(game_id):
             "protondb_tier" : "unknown",
         }
     else:
-        data = json.loads(answer.text)
+        data = answer.json()
         return {
             "appid" : game_id,
             "protondb_reports" : data["total"],
