@@ -5,9 +5,12 @@ build : install-dependencies get-reviews prepare
 prepare :
 	python3 prepare.py
 
+steam-spy :
+	@python3 steam_spy.py
+
 # Installs necessary dependencies using pip, Python's package installer
 install-dependencies :
-	@for dep in pandas seaborn beautifulsoup4 colorama ; do \
+	@for dep in pandas seaborn beautifulsoup4 steamreviews colorama requests requests_futures tqdm; do \
 		echo "Installing $$dep..." ; \
 		pip3 install $$dep > /dev/null ; \
 	done
