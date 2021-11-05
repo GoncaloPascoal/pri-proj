@@ -8,6 +8,6 @@ steam-spy :
 	@python3 steam_spy.py
 
 install-dependencies :
-	for dep in pandas seaborn beautifulsoup4 steamreviews colorama ; do \
+	for dep in pandas seaborn beautifulsoup4 steamreviews colorama requests requests_futures tqdm; do \
 		pip3 install $$dep ; \
 	done
