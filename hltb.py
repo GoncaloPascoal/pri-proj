@@ -1,10 +1,11 @@
-
 from howlongtobeatpy import HowLongToBeat, HowLongToBeatEntry
 
 import pandas as pd
 import asyncio
 
 HLTB_CSV = 'data/hltb.csv'
+SIMULTANEOUS_TASKS = 50
+CHECKPOINT = 250
 
 def get_empty_game_entry():
     game_entry = HowLongToBeatEntry()
@@ -57,26 +58,59 @@ def get_missing_appids(games, game_entries):
         already_done = set(game_entries['appid'])
     return appids - already_done
 
-async def get_gameplay_times(games, game_entries):
+def get_gameplay_times(games, game_entries):
     hltb = HowLongToBeat(1.0)
-    missing_appids = get_missing_appids(games, game_entries)
-    games = games.loc[games['appid'].isin(missing_appids)]
 
     tasks = [get_game_entry_from_hltb(hltb, row['name'], row['appid']) for _, row in games.iterrows()]
-    
-    completed, _ = await asyncio.wait(tasks)
+    completed = asyncio.run(wait_for_tasks(tasks))
     for completed_task in completed:
         (game_entry, appid) = completed_task.result()
         game_entries = add_game(game_entries, appid, game_entry)
-    
     return game_entries
+
+def get_games_to_search(games, game_entries):
+    missing_appids = get_missing_appids(games, game_entries)
+    return games.loc[games['appid'].isin(missing_appids)]
+
+async def wait_for_tasks(tasks):
+    completed = set()
+    while len(tasks) > 0:
+        if len(tasks) > SIMULTANEOUS_TASKS:
+            partial_tasks = tasks[:SIMULTANEOUS_TASKS]
+            tasks = tasks[SIMULTANEOUS_TASKS:]
+        else:
+            partial_tasks = tasks
+            tasks = []
+
+        more_completed, pending = await asyncio.wait(partial_tasks)
+        completed = completed.union(more_completed)
+
+        while len(pending) > 0:
+            more_completed, pending = await asyncio.wait(list(pending))
+            completed = completed.union(more_completed)
+
+    return completed 
+
+def save_checkpoint(results):
+    print("Saved " + str(len(results)) + " games")
+    results.to_csv(HLTB_CSV, index=False)
+
+def get_checkpoints(games_to_search):
+    checkpoints = []
+    while len(games_to_search) > CHECKPOINT:
+        checkpoints.append(games_to_search.iloc[:CHECKPOINT-1])
+        games_to_search = games_to_search.iloc[CHECKPOINT:]
+    checkpoints.append(games_to_search)
+    return checkpoints
 
 def main():
     games = pd.read_csv('data/steam_processed.csv')
-    games = games.loc[0:100]
     game_entries = get_game_entries()
-    results = asyncio.run(get_gameplay_times(games, game_entries))
-    results.to_csv(HLTB_CSV, index=False)
-    
+    games = get_games_to_search(games, game_entries)
+    games = games.iloc[0:501] # TODO: remove
+    for checkpoint in get_checkpoints(games):
+        game_entries = get_gameplay_times(checkpoint, game_entries)
+        save_checkpoint(game_entries)
+
 if __name__ == '__main__':
     main()
