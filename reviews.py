@@ -1,14 +1,42 @@
 
-import requests, json
+import json
 import pandas as pd
+from requests_futures.sessions import FuturesSession
 from tqdm import tqdm
 from colorama import Fore, Style
+
+REVIEWS_PER_GAME = 5
 
 def convert_types(df, types):
     for key, data_type in types.items():
         df[key] = df[key].astype(data_type)
     
     return df
+
+def parse_future(future, reviews_df):
+    response = future.result()
+
+    reviews_json = json.loads(response.text)
+    reviews_slice = reviews_json['reviews'][:REVIEWS_PER_GAME]
+
+    for review in reviews_slice:
+        author = review['author']
+
+        reviews_df = reviews_df.append({
+            'appid': future.appid,
+            'author_steamid': author['steamid'],
+            'playtime_at_review': author['playtime_at_review'] if 'playtime_at_review' in author else 0, 
+            'review': review['review'].replace('\n', ' '),
+            'created': review['timestamp_created'],
+            'updated': review['timestamp_updated'],
+            'votes_up': review['votes_up'],
+            'votes_funny': review['votes_funny'],
+            'vote_score': review['weighted_vote_score'],
+            'steam_purchase': review['steam_purchase'],
+            'received_for_free': review['received_for_free']
+        }, ignore_index=True)
+
+    return reviews_df
 
 def write_data(df, messages=True):
     if not df.empty:
@@ -36,7 +64,8 @@ def write_data(df, messages=True):
 def main():
     print(Fore.MAGENTA + Style.BRIGHT + '\n--- Steam Reviews Script ---\n')
 
-    reviews_per_game = 5
+    session = FuturesSession(max_workers=10)
+    futures = []
 
     req_params = {
         'filter': 'all',    # Reviews sorted by helpfulness
@@ -61,39 +90,21 @@ def main():
         pass
 
     print(Fore.CYAN + 'Fetching reviews using the Steam Store API...\n' + Fore.RESET)
-    for index, row in tqdm(list(app_ids.head(50).iterrows())):
-        app_id = row['appid']
+    for _, row in app_ids.head(50).iterrows():
+        appid = row['appid']
 
-        if app_id in existing_app_ids:
+        if appid in existing_app_ids:
             continue
 
-        url = 'https://store.steampowered.com/appreviews/' + str(app_id) + '?json=1'
-        response = requests.get(
-            url = url,
-            headers = req_params,
-        )
+        url = 'https://store.steampowered.com/appreviews/' + str(appid) + '?json=1'
+        future = session.get(url, headers=req_params)
+        future.appid = appid
+        futures.append(future)
 
-        reviews_json = json.loads(response.text)
-        reviews_slice = reviews_json['reviews'][:reviews_per_game]
-
-        for review in reviews_slice:
-            author = review['author']
-
-            reviews_df = reviews_df.append({
-                'appid': app_id,
-                'author_steamid': author['steamid'],
-                'playtime_at_review': author['playtime_at_review'] if 'playtime_at_review' in author else 0, 
-                'review': review['review'].replace('\n', ' '),
-                'created': review['timestamp_created'],
-                'updated': review['timestamp_updated'],
-                'votes_up': review['votes_up'],
-                'votes_funny': review['votes_funny'],
-                'vote_score': review['weighted_vote_score'],
-                'steam_purchase': review['steam_purchase'],
-                'received_for_free': review['received_for_free']
-            }, ignore_index=True)
+    for i, future in enumerate(tqdm(futures)):
+        reviews_df = parse_future(future, reviews_df)
         
-        if index % 1000 == 0:
+        if i % 1000 == 0:
             write_data(reviews_df, messages=False)
 
     print()
