@@ -1,7 +1,8 @@
-from howlongtobeatpy import HowLongToBeat, HowLongToBeatEntry
 
 import pandas as pd
 import asyncio
+from howlongtobeatpy import HowLongToBeat, HowLongToBeatEntry
+from reviews import convert_types
 
 HLTB_CSV = 'data/hltb.csv'
 SIMULTANEOUS_TASKS = 1400
@@ -64,7 +65,7 @@ def get_gameplay_times(games, game_entries):
     tasks = [get_game_entry_from_hltb(hltb, row['name'], row['appid']) for _, row in games.iterrows()]
     completed = asyncio.run(wait_for_tasks(tasks))
     for completed_task in completed:
-        (game_entry, appid) = completed_task.result()
+        game_entry, appid = completed_task.result()
         game_entries = add_game(game_entries, appid, game_entry)
     return game_entries
 
@@ -92,6 +93,12 @@ async def wait_for_tasks(tasks):
     return completed 
 
 def save_checkpoint(results):
+    convert_types(results, {
+        'appid': int,
+        'main_time': 'Int64',
+        'extra_time': 'Int64',
+        'completionist_time': 'Int64',
+    })
     results.to_csv(HLTB_CSV, index=False)
 
 def get_checkpoints(games_to_search):
@@ -103,7 +110,7 @@ def get_checkpoints(games_to_search):
     return checkpoints
 
 def main():
-    games = pd.read_csv('data/steam_processed.csv')
+    games = pd.read_csv('data/steam.csv').head()
     game_entries = get_game_entries()
     games = get_games_to_search(games, game_entries)
     for checkpoint in get_checkpoints(games):
