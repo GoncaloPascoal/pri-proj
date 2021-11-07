@@ -94,7 +94,7 @@ def main():
     except FileNotFoundError:
         pass
 
-    print(Fore.CYAN + '- Obtaining updated ratings and playtime data from SteamSpy API...')
+    print(Fore.CYAN + '- Obtaining updated ratings and playtime data from SteamSpy API...\n' + Fore.RESET)
     for index, row in df.head(50).iterrows(): # TODO: Replace this with sample
         appid = row['appid']
 
@@ -114,6 +114,7 @@ def main():
         if i % 1000 == 0:
             write_data(updated_df, messages=False)
     
+    print()
     write_data(updated_df)
     print(Fore.GREEN + '\nDone.\n' + Style.RESET_ALL)
 
