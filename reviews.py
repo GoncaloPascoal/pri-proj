@@ -78,14 +78,14 @@ def main():
     app_ids = pd.read_csv('data/steam.csv')[['appid']].copy()
     reviews_df = pd.DataFrame()
 
-    existing_app_ids = set()
+    existing_appids = set()
 
     try:
         existing_reviews = pd.read_csv('data/reviews.csv')
 
         print(Fore.YELLOW + 'Found existing reviews file, skipping API calls for existing games...')
         reviews_df = reviews_df.append(existing_reviews)
-        existing_app_ids = set(existing_reviews['appid'])
+        existing_appids = set(existing_reviews['appid'])
     except FileNotFoundError:
         pass
 
@@ -93,7 +93,7 @@ def main():
     for _, row in app_ids.head(50).iterrows():
         appid = row['appid']
 
-        if appid in existing_app_ids:
+        if appid in existing_appids:
             continue
 
         url = 'https://store.steampowered.com/appreviews/' + str(appid) + '?json=1'
