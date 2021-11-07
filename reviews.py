@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from requests_futures.sessions import FuturesSession
 from tqdm import tqdm
+import colorama
 from colorama import Fore, Style
 
 REVIEWS_PER_GAME = 5
@@ -62,6 +63,7 @@ def write_data(df, messages=True):
         df.to_csv('data/reviews.csv', index=False)
 
 def main():
+    colorama.init()
     print(Fore.MAGENTA + Style.BRIGHT + '\n--- Steam Reviews Script ---\n')
 
     session = FuturesSession(max_workers=10)

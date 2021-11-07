@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from requests_futures.sessions import FuturesSession
 from tqdm import tqdm
+import colorama
 from colorama import Fore, Style
 from reviews import convert_types
 
@@ -74,6 +75,7 @@ def write_data(df, messages=True):
         df.to_csv('data/steam_updated.csv', index=False)
 
 def main():
+    colorama.init()
     print(Fore.MAGENTA + Style.BRIGHT + '\n--- SteamSpy Script ---\n')
 
     session = FuturesSession(max_workers=10)
