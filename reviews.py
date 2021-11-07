@@ -41,7 +41,7 @@ def parse_future(future, reviews_df):
 def write_data(df, messages=True):
     if not df.empty:
         if messages:
-            print(Fore.CYAN + 'Performing type conversion...')
+            print(Fore.CYAN + '- Performing type conversion...')
 
         df = convert_types(df, {
             'appid': int,
@@ -57,7 +57,7 @@ def write_data(df, messages=True):
         })
 
         if messages:
-            print('Writing review data to CSV...')
+            print('- Writing review data to CSV...')
 
         df.to_csv('data/reviews.csv', index=False)
 
@@ -74,7 +74,7 @@ def main():
         'cursor': '*',
     }
 
-    print(Fore.CYAN + 'Reading app ids from steam.csv file...')
+    print(Fore.CYAN + '- Reading app ids from steam.csv file...')
     app_ids = pd.read_csv('data/steam.csv')[['appid']].copy()
     reviews_df = pd.DataFrame()
 
@@ -83,13 +83,13 @@ def main():
     try:
         existing_reviews = pd.read_csv('data/reviews.csv')
 
-        print(Fore.YELLOW + 'Found existing reviews file, skipping API calls for existing games...')
+        print(Fore.YELLOW + '- Found existing reviews file, skipping API calls for existing games...')
         reviews_df = reviews_df.append(existing_reviews)
         existing_appids = set(existing_reviews['appid'])
     except FileNotFoundError:
         pass
 
-    print(Fore.CYAN + 'Fetching reviews using the Steam Store API...\n' + Fore.RESET)
+    print(Fore.CYAN + '- Fetching reviews using the Steam Store API...\n' + Fore.RESET)
     for _, row in app_ids.head(50).iterrows():
         appid = row['appid']
 
@@ -109,7 +109,7 @@ def main():
 
     print()
     write_data(reviews_df)
-    print(Fore.GREEN + 'Done.\n')
+    print(Fore.GREEN + '\nDone.\n')
 
 if __name__ == '__main__':
     main()
