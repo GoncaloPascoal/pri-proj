@@ -16,6 +16,11 @@ reviews :
 steam-spy :
 	@python3 steam_spy.py
 
+# Fetches information from HowLongToBeat website (regarding the expected
+# length of a game based on user reports)
+hltb :
+	@python3 hltb.py
+
 # Gets number of reports and game compatibility tier from ProtonDB
 proton-db :
 	@python3 proton_db.py
