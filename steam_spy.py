@@ -97,7 +97,7 @@ def main():
         pass
 
     print(Fore.CYAN + '- Obtaining updated ratings and playtime data from SteamSpy API...\n' + Fore.RESET)
-    for index, row in df.head(50).iterrows(): # TODO: Replace this with sample
+    for index, row in df.iterrows():
         appid = row['appid']
 
         if appid in existing_appids:

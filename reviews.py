@@ -94,7 +94,7 @@ def main():
         pass
 
     print(Fore.CYAN + '- Fetching reviews using the Steam Store API...\n' + Fore.RESET)
-    for _, row in app_ids.head(50).iterrows():
+    for _, row in app_ids.iterrows():
         appid = row['appid']
 
         if appid in existing_appids:
