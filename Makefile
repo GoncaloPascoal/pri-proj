@@ -3,7 +3,7 @@ run : install-dependencies reviews proton-db steam-spy prepare
 
 # Installs necessary dependencies using pip, Python's package installer
 install-dependencies :
-	@for dep in pandas seaborn beautifulsoup4 steamreviews colorama requests requests_futures tqdm; do \
+	@for dep in pandas seaborn beautifulsoup4 lxml steamreviews colorama howlongtobeatpy requests requests_futures tqdm; do \
 		echo "Installing $$dep..." ; \
 		pip3 install $$dep > /dev/null ; \
 	done
@@ -15,6 +15,11 @@ reviews :
 # Updates the ratings and playtime information using the SteamSpy API
 steam-spy :
 	@python3 steam_spy.py
+
+# Fetches information from HowLongToBeat website (regarding the expected
+# length of a game based on user reports)
+hltb :
+	@python3 hltb.py
 
 # Gets number of reports and game compatibility tier from ProtonDB
 proton-db :
