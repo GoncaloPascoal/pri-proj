@@ -49,7 +49,7 @@ def main():
     print('Writing processed data to a new CSV file...')
     df.to_csv('data/steam_processed.csv', index=False)
 
-    print(Fore.GREEN + 'Done.' + Style.RESET_ALL)
+    print(Fore.GREEN + '\nDone.\n' + Style.RESET_ALL)
 
 if __name__ == '__main__':
     main()

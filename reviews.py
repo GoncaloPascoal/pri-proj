@@ -109,7 +109,7 @@ def main():
 
     print()
     write_data(reviews_df)
-    print(Fore.GREEN + '\nDone.\n')
+    print(Fore.GREEN + '\nDone.' + Fore.RESET)
 
 if __name__ == '__main__':
     main()
