@@ -3,6 +3,7 @@ import pandas as pd
 import asyncio
 from howlongtobeatpy import HowLongToBeat, HowLongToBeatEntry
 from reviews import convert_types
+from colorama import Fore, Style
 
 HLTB_CSV = 'data/hltb.csv'
 SIMULTANEOUS_TASKS = 1400
@@ -48,7 +49,9 @@ def add_game(games, id, game_entry):
 
 def get_game_entries():
     try:
-        return pd.read_csv(HLTB_CSV)
+        existing_times = pd.read_csv(HLTB_CSV)
+        print(Fore.YELLOW + '- Found existing game times file, skipping API calls for existing games...')
+        return existing_times
     except FileNotFoundError:
         return pd.DataFrame()
 
@@ -110,12 +113,16 @@ def get_checkpoints(games_to_search):
     return checkpoints
 
 def main():
-    games = pd.read_csv('data/steam.csv').head()
+    print(Fore.MAGENTA + Style.BRIGHT + '\n--- Game Times Script ---\n')
+    print(Fore.CYAN + '- Reading app ids from steam.csv file...')
+    games = pd.read_csv('data/steam.csv')
     game_entries = get_game_entries()
+    print(Fore.CYAN + '- Fetching game times using the howlongtobeatpy package...\n' + Fore.RESET)
     games = get_games_to_search(games, game_entries)
     for checkpoint in get_checkpoints(games):
         game_entries = get_gameplay_times(checkpoint, game_entries)
         save_checkpoint(game_entries)
+    print(Fore.GREEN + 'Done.' + Fore.RESET)
 
 if __name__ == '__main__':
     main()
