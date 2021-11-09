@@ -27,5 +27,5 @@ proton-db : /usr/bin/python3
 
 # Script for cleaning and processing the Kaggle dataset
 prepare : /usr/bin/python3 data/reviews.csv data/steam_updated.csv \
-data/steam_descriptions.csv data/proton_db.csv data/hltb.csv
+data/steam_description_data.csv data/proton_db.csv data/hltb.csv
 	@python3 prepare.py
