@@ -40,7 +40,7 @@ def convert_dataframe_to_dict(df, unique_appid=True):
         if unique_appid:
             dct[appid] = rest
         else:
-            if appid in reviews_dict:
+            if appid in dct:
                 dct[appid].append(rest)
             else:
                 dct[appid] = [rest]
