@@ -1,6 +1,7 @@
 from requests_futures.sessions import FuturesSession
 import pandas as pd
 from tqdm import tqdm
+from colorama import Fore, Style
 
 PROTON_CSV = 'data/proton_db.csv'
 
@@ -30,6 +31,9 @@ def get_missing_appids(appids):
         return appids
 
 def main():
+    print(Fore.MAGENTA + Style.BRIGHT + '\n--- Proton Reports Script ---\n')
+    
+    print(Fore.CYAN + '- Reading app ids from steam.csv file...')
     games = pd.read_csv('data/steam.csv')
     appids = list(games['appid'])
 
@@ -43,17 +47,21 @@ def main():
 
     try:
         already_done_df = pd.read_csv(PROTON_CSV)
+        print(Fore.YELLOW + '- Found existing proton db file, skipping calls for existing games...')
         res = already_done_df.to_dict('records') # Lets continue from where we left off
     except FileNotFoundError:
         res = []
 
+    print(Fore.CYAN + '- Fetching proton reports and tier using the Proton DB API...\n' + Fore.RESET)
     for i, future in enumerate(tqdm(futures)):
         res.append(parse_future(future))
 
         if i % 1000 == 0:
             pd.DataFrame(res).to_csv(PROTON_CSV, index=False)
 
+    print(Fore.CYAN + '\n- Writing proton reports data to CSV...')
     pd.DataFrame(res).to_csv(PROTON_CSV, index=False)
+    print(Fore.GREEN + '\nDone.' + Fore.RESET)
 
 if __name__ == '__main__':
     main()
