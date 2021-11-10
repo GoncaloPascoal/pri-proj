@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from requests_futures.sessions import FuturesSession
 from tqdm import tqdm
+import colorama
 from colorama import Fore, Style
 
 REVIEWS_PER_GAME = 5
@@ -29,6 +30,7 @@ def parse_future(future, reviews_df):
             'review': review['review'].replace('\n', ' '),
             'created': review['timestamp_created'],
             'updated': review['timestamp_updated'],
+            'recommended': review['voted_up'],
             'votes_up': review['votes_up'],
             'votes_funny': review['votes_funny'],
             'vote_score': review['weighted_vote_score'],
@@ -49,6 +51,7 @@ def write_data(df, messages=True):
             'playtime_at_review': int,
             'created': int,
             'updated': int,
+            'recommended': bool,
             'votes_up': int,
             'votes_funny': int,
             'vote_score': float,
@@ -62,6 +65,7 @@ def write_data(df, messages=True):
         df.to_csv('data/reviews.csv', index=False)
 
 def main():
+    colorama.init()
     print(Fore.MAGENTA + Style.BRIGHT + '\n--- Steam Reviews Script ---\n')
 
     session = FuturesSession(max_workers=10)
@@ -90,7 +94,7 @@ def main():
         pass
 
     print(Fore.CYAN + '- Fetching reviews using the Steam Store API...\n' + Fore.RESET)
-    for _, row in app_ids.head(50).iterrows():
+    for _, row in app_ids.iterrows():
         appid = row['appid']
 
         if appid in existing_appids:
