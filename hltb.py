@@ -85,7 +85,14 @@ async def wait_for_tasks(tasks):
 
     return completed 
 
-def save_checkpoint(results):get_empty_game_entry
+def save_checkpoint(results):
+    convert_types(results, {
+        'appid': int,
+        'main_time': 'Int64',
+        'extra_time': 'Int64',
+        'completionist_time': 'Int64',
+    })
+    results.to_csv(HLTB_CSV, index=False)
 
 def get_checkpoints(games_to_search):
     checkpoints = []
