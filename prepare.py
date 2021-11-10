@@ -1,5 +1,6 @@
 
 from bs4 import BeautifulSoup
+import numpy as np
 import pandas as pd
 import json, colorama, os.path
 from colorama import Fore, Style
@@ -13,26 +14,33 @@ PROTON_DB_JSON = 'data/proton_db.json'
 def convert_to_list(df, col):
     df[col] = df[col].apply(lambda x: x.split(';'))
 
-def minutes_to_hours(df, col):
-    df[col] = df[col].apply(lambda x: x / 60.0)
-
 def extract_text_from_html(df, col):
     df[col] = df[col].apply(lambda x: BeautifulSoup(x, features='lxml').get_text())
 
-def process_steam_description_data():
-    desc = pd.read_csv('data/steam_description_data.csv')
-    desc = desc.rename(columns={'steam_appid': 'appid'})
+def process_steam_data(df):
+    df['english'] = df['english'].astype(bool)
+    df['release_date'] = pd.to_datetime(df['release_date'])
+    df['owners'] = df['owners'].astype('category')
+
+    for col in ['developer', 'publisher', 'platforms', 'categories', 'genres', 'steamspy_tags']:
+        convert_to_list(df, col)
+
+    return df
+
+def process_steam_description_data(df):
+    df = df.rename(columns={'steam_appid': 'appid'})
 
     print('- Extracting text from HTML descriptions...')
     for col in ['detailed_description', 'about_the_game', 'short_description']:
-        extract_text_from_html(desc, col)
+        extract_text_from_html(df, col)
 
-    return desc
+    return df
 
 def convert_dataframe_to_dict(df, unique_appid=True):
     dct = {}
 
     for _, row in df.iterrows():
+        row = row.replace({np.nan: None})
         appid = row['appid']
         rest = row.to_dict()
         del rest['appid']
@@ -58,31 +66,24 @@ def main():
     print(Fore.CYAN + Style.BRIGHT + '- Reading main Steam data CSV file...')
     df = pd.read_csv('data/steam_updated.csv')
 
-    if os.path.exists(DESCRIPTIONS_JSON):
-        print(Fore.YELLOW + '- Found existing processed descriptions file, skipping this step...')
-    else:
-        print('- Reading description data CSV file...')
-        desc = process_steam_description_data()
-
-        print('- Writing processed descriptions to JSON file...')
-        desc.to_json(DESCRIPTIONS_JSON, orient='records')
-
     if os.path.exists(STEAM_JSON):
         print(Fore.YELLOW + '- Found existing processed Steam data file, skipping this step...')
     else:
         print(Fore.CYAN + '- Performing data type conversion...')
-        df['english'] = df['english'].astype(bool)
-        df['release_date'] = pd.to_datetime(df['release_date'])
-        df['owners'] = df['owners'].astype('category')
-
-        for col in ['developer', 'publisher', 'platforms', 'categories', 'genres', 'steamspy_tags']:
-            convert_to_list(df, col)
-
-        for col in ['average_playtime', 'median_playtime']:
-            minutes_to_hours(df, col)
+        df = process_steam_data(df)
         
         print('- Writing processed Steam data to JSON file...')
         df.to_json(STEAM_JSON, orient='records')
+    
+    if os.path.exists(DESCRIPTIONS_JSON):
+        print(Fore.YELLOW + '- Found existing processed descriptions file, skipping this step...')
+    else:
+        print('- Reading description data CSV file...')
+        desc = pd.read_csv('data/steam_description_data.csv')
+        desc = process_steam_description_data(desc)
+
+        print('- Writing processed descriptions to JSON file...')
+        desc.to_json(DESCRIPTIONS_JSON, orient='records')
 
     if os.path.exists(REVIEWS_JSON):
         print(Fore.YELLOW + '- Found existing processed reviews file, skipping this step...')

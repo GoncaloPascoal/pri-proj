@@ -9,21 +9,11 @@ HLTB_CSV = 'data/hltb.csv'
 SIMULTANEOUS_TASKS = 1400
 CHECKPOINT = 2800
 
-def get_empty_game_entry():
-    game_entry = HowLongToBeatEntry()
-    game_entry.gameplay_main               = -1
-    game_entry.gameplay_main_unit          = None
-    game_entry.gameplay_main_extra         = -1
-    game_entry.gameplay_main_extra_unit    = None
-    game_entry.gameplay_completionist      = -1
-    game_entry.gameplay_completionist_unit = None
-    return game_entry
-
 def get_minutes(time_unit):
     return 60 if time_unit == 'Hours' else 1 # 'Hours', 'Mins'
 
-def get_time(time, time_unit):
-    if time == -1 or time_unit == None:
+def get_time(time, time_unit, time_label):
+    if time == -1 or time_unit == None or time_label == None:
         return None
     if type(time) is str:
         if '½' in time:
@@ -35,16 +25,16 @@ def get_time(time, time_unit):
 async def get_game_entry_from_hltb(hltb, name, appid):
     results = await hltb.async_search(name, similarity_case_sensitive=False)
     if results is None or len(results) == 0:
-        return (get_empty_game_entry(), appid)
+        return (HowLongToBeatEntry(), appid)
     else:
         return (results[0], appid)
 
 def add_game(games, id, game_entry):
     return games.append({
         'appid': id,
-        'main_time'         : get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         ),
-        'extra_time'        : get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   ),
-        'completionist_time': get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit)
+        'main_time'         : get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         , game_entry.gameplay_main_label         ),
+        'extra_time'        : get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   , game_entry.gameplay_main_extra_label   ),
+        'completionist_time': get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit, game_entry.gameplay_completionist_label)
     }, ignore_index=True)
 
 def get_game_entries():
@@ -56,7 +46,7 @@ def get_game_entries():
         return pd.DataFrame()
 
 def get_missing_appids(games, game_entries):
-    appids       = set(games       ['appid'])
+    appids       = set(games['appid'])
     already_done = set()
     if 'appid' in game_entries.columns:
         already_done = set(game_entries['appid'])
@@ -95,14 +85,7 @@ async def wait_for_tasks(tasks):
 
     return completed 
 
-def save_checkpoint(results):
-    convert_types(results, {
-        'appid': int,
-        'main_time': 'Int64',
-        'extra_time': 'Int64',
-        'completionist_time': 'Int64',
-    })
-    results.to_csv(HLTB_CSV, index=False)
+def save_checkpoint(results):get_empty_game_entry
 
 def get_checkpoints(games_to_search):
     checkpoints = []
