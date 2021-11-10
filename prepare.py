@@ -4,8 +4,8 @@ import pandas as pd
 import json, colorama, os.path
 from colorama import Fore, Style
 
-STEAM_JSON = 'data/steam_processed.json'
-DESCRIPTIONS_JSON = 'data/descriptions_processed.json'
+STEAM_JSON = 'data/steam.json'
+DESCRIPTIONS_JSON = 'data/descriptions.json'
 REVIEWS_JSON = 'data/reviews.json'
 HLTB_JSON = 'data/hltb.json'
 PROTON_DB_JSON = 'data/proton_db.json'
@@ -56,7 +56,7 @@ def main():
     print(Fore.MAGENTA + Style.BRIGHT + '\n--- Data Cleaning and Processing Script ---\n')
 
     print(Fore.CYAN + Style.BRIGHT + '- Reading main Steam data CSV file...')
-    df = pd.read_csv('data/steam.csv')
+    df = pd.read_csv('data/steam_updated.csv')
 
     if os.path.exists(DESCRIPTIONS_JSON):
         print(Fore.YELLOW + '- Found existing processed descriptions file, skipping this step...')
@@ -100,7 +100,7 @@ def main():
         print(Fore.YELLOW + '- Found existing processed HLTB file, skipping this step...')
     else:
         print(Fore.CYAN + '- Reading HLTB CSV...')
-        hltb_df = pd.read_csv('data/reviews.csv')
+        hltb_df = pd.read_csv('data/hltb.csv')
 
         print('- Reshaping data for JSON format...')
         hltb_dict = convert_dataframe_to_dict(hltb_df)
@@ -112,7 +112,7 @@ def main():
         print(Fore.YELLOW + '- Found existing processed ProtonDB file, skipping this step...')
     else:
         print(Fore.CYAN + '- Reading ProtonDB CSV...')
-        proton_db_df = pd.read_csv('data/reviews.csv')
+        proton_db_df = pd.read_csv('data/proton_db.csv')
 
         print('- Reshaping data for JSON format...')
         proton_db_dict = convert_dataframe_to_dict(proton_db_df)
