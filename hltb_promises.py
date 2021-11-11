@@ -2,9 +2,10 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from requests_futures.sessions import FuturesSession
 from tqdm import tqdm
+from reviews import convert_types
 import re
 
-HLTB_CSV = "data/hltb.csv"
+HLTB_CSV = 'data/hltb.csv'
 
 HEADERS = {
     'content-type': 'application/x-www-form-urlencoded',
@@ -31,23 +32,23 @@ def get_game_hltb_url_future(future, session : FuturesSession):
     r = future.result()
 
     assert r.status_code == 200
-    if "No results for" in r.text:
-        return "No results"
+    if 'No results for' in r.text:
+        return 'No results'
 
-    hltb_url = BeautifulSoup(r.text, features="lxml").find("a")["href"]
+    hltb_url = BeautifulSoup(r.text, features='lxml').find('a')['href']
 
-    return session.get("https://howlongtobeat.com/" + hltb_url, headers=HEADERS)
+    return session.get('https://howlongtobeat.com/' + hltb_url, headers=HEADERS)
 
 def empty_game_playtime(appid):
     return {
         "appid" : appid,
-        "Main Story" : 0, 
-        "Main + Extras" : 0, 
-        "Completionists" : 0,
+        "Main Story" : None,
+        "Main + Extras" : None,
+        "Completionists" : None,
     }
 
 def convert_to_minutes(hm_string):
-    match = re.search(r"((\d+)h\s?)?((\d+)m)?", hm_string)
+    match = re.search(r'((\d+)h\s?)?((\d+)m)?', hm_string)
     
     if match.group(2) == None:
         h = 0
@@ -62,13 +63,13 @@ def convert_to_minutes(hm_string):
     return int(h * 60 + m)
 
 def get_game_playtime(game_url_future, appid):
-    if game_url_future == "No results":
+    if game_url_future == 'No results':
         return empty_game_playtime(appid)
 
     r = game_url_future.result()
 
-    soup = BeautifulSoup(r.text, features="lxml")
-    table = soup.find("table", {"class" : "game_main_table"})
+    soup = BeautifulSoup(r.text, features='lxml')
+    table = soup.find('table', {'class' : 'game_main_table'})
     if table == None:
         return empty_game_playtime(appid)
 
@@ -78,9 +79,9 @@ def get_game_playtime(game_url_future, appid):
         "appid" : appid
     }
 
-    for category, entry in zip(("Main Story", "Main + Extras", "Completionists"), table_entries):
+    for category, entry in zip(('Main Story', 'Main + Extras', 'Completionists'), table_entries):
         if category not in str(entry):
-            res[category] = 0
+            res[category] = None
         else:
             res[category] = convert_to_minutes(entry.find_all("td")[2].text)
     
@@ -96,8 +97,8 @@ def get_missing_appids(appids):
 
 def main():
     games = pd.read_csv('data/steam.csv')
-    appids = list(games["appid"])
-    name_lookup = {appid : name for appid, name in zip(list(games["appid"]), list(games["name"]))}
+    appids = list(games['appid'])
+    name_lookup = {appid : name for appid, name in zip(list(games['appid']), list(games['name']))}
 
     session_1 = FuturesSession(max_workers=10)
     session_2 = FuturesSession(max_workers=10)
@@ -120,7 +121,21 @@ def main():
 
         res.extend([get_game_playtime(future, appid) for appid, future in futures_results])
 
-        pd.DataFrame(res).to_csv(HLTB_CSV, index=False)
+        df = pd.DataFrame(res).rename(
+            {
+                'Main Story': 'main_time',
+                'Main + Extras': 'extras_time',
+                'Completionists': 'completionist_time'
+            }, axis='columns'
+        )
+        convert_types(df, {
+            'appid': int,
+            'main_time': 'Int64',
+            'extras_time': 'Int64',
+            'completionist_time': 'Int64',
+        })
+
+        df.to_csv(HLTB_CSV, index=False)
 
 
 if __name__ == "__main__":
