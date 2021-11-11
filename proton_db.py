@@ -31,7 +31,7 @@ def get_missing_appids(appids):
         return appids
 
 def main():
-    print(Fore.MAGENTA + Style.BRIGHT + '\n--- Proton Reports Script ---\n')
+    print(Fore.MAGENTA + Style.BRIGHT + '\n--- ProtonDB Reports Script ---\n')
     
     print(Fore.CYAN + '- Reading app ids from steam.csv file...')
     games = pd.read_csv('data/steam.csv')

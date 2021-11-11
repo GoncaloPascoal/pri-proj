@@ -103,16 +103,19 @@ def get_checkpoints(games_to_search):
     return checkpoints
 
 def main():
-    print(Fore.MAGENTA + Style.BRIGHT + '\n--- Game Times Script ---\n')
+    print(Fore.MAGENTA + Style.BRIGHT + '\n--- HowLongToBeat Script ---\n')
+
     print(Fore.CYAN + '- Reading app ids from steam.csv file...')
     games = pd.read_csv('data/steam.csv')
     game_entries = get_game_entries()
-    print(Fore.CYAN + '- Fetching game times using the howlongtobeatpy package...\n' + Fore.RESET)
+
+    print(Fore.CYAN + '- Fetching game times using the howlongtobeatpy package...' + Fore.RESET)
     games = get_games_to_search(games, game_entries)
     for checkpoint in get_checkpoints(games):
         game_entries = get_gameplay_times(checkpoint, game_entries)
         save_checkpoint(game_entries)
-    print(Fore.GREEN + 'Done.' + Fore.RESET)
+    
+    print(Fore.GREEN + '\nDone.\n' + Fore.RESET)
 
 if __name__ == '__main__':
     main()
