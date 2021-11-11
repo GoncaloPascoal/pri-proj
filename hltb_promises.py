@@ -83,7 +83,14 @@ def get_game_playtime(game_url_future, appid):
         if category not in str(entry):
             res[category] = None
         else:
+            polled = entry.find_all("td")[1].text.strip()
+            if "K" in polled:
+                n_polled = int(1000 * float(polled[:-1]))
+            else:
+                n_polled = int(polled)
+
             res[category] = convert_to_minutes(entry.find_all("td")[2].text)
+            res[f"{category} polled"] = n_polled
     
     return res
 
@@ -125,7 +132,10 @@ def main():
             {
                 'Main Story': 'main_time',
                 'Main + Extras': 'extras_time',
-                'Completionists': 'completionist_time'
+                'Completionists': 'completionist_time',
+                'Main Story polled': 'main_reports',
+                'Main + Extras polled': 'extras_reports',
+                'Completionists polled': 'completionist_reports',
             }, axis='columns'
         )
         convert_types(df, {
@@ -133,6 +143,9 @@ def main():
             'main_time': 'Int64',
             'extras_time': 'Int64',
             'completionist_time': 'Int64',
+            'main_reports' : "Int64",
+            'extras_reports' : "Int64",
+            'completionist_reports' : "Int64",
         })
 
         df.to_csv(HLTB_CSV, index=False)
