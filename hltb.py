@@ -33,7 +33,7 @@ def add_game(games, id, game_entry):
     return games.append({
         'appid': id,
         'main_time'         : get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         , game_entry.gameplay_main_label         ),
-        'extra_time'        : get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   , game_entry.gameplay_main_extra_label   ),
+        'extras_time'        : get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   , game_entry.gameplay_main_extra_label   ),
         'completionist_time': get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit, game_entry.gameplay_completionist_label)
     }, ignore_index=True)
 
@@ -89,7 +89,7 @@ def save_checkpoint(results):
     convert_types(results, {
         'appid': int,
         'main_time': 'Int64',
-        'extra_time': 'Int64',
+        'extras_time': 'Int64',
         'completionist_time': 'Int64',
     })
     results.to_csv(HLTB_CSV, index=False)

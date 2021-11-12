@@ -41,8 +41,12 @@ def main():
     plt.show()
 
     # Price distribution
-    # df = steam_df.loc[steam_df['price'] <= 100]
-    sb.histplot(data=steam_df, x='price', bins=8).set(title="Price Distribution", ylabel="Count", xlabel="Price")
+    df = steam_df.loc[steam_df['price'] <= 50]
+    sb.histplot(data=df, x='price', bins=200).set(title="Price Distribution (< 50$)", ylabel="Count", xlabel="Price")
+    plt.show()
+
+    steam_df['decimal'] = steam_df['price'] % 1
+    sb.histplot(data=steam_df, x='decimal', binwidth=0.01).set(title="Decimal Part of the Price Distribution", ylabel="Count", xlabel="Decimal Part of the Price")
     plt.show()
 
     # Owners distribution
