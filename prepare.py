@@ -72,18 +72,15 @@ def main():
         print(Fore.CYAN + '- Performing data type conversion...')
         df = process_steam_data(df)
         
-        print('- Writing processed Steam data to JSON file...')
-        df.to_json(STEAM_JSON, orient='records')
-    
-    if os.path.exists(DESCRIPTIONS_JSON):
-        print(Fore.YELLOW + '- Found existing processed descriptions file, skipping this step...')
-    else:
         print('- Reading description data CSV file...')
         desc = pd.read_csv('data/steam_description_data.csv')
         desc = process_steam_description_data(desc)
 
-        print('- Writing processed descriptions to JSON file...')
-        desc.to_json(DESCRIPTIONS_JSON, orient='records')
+        print("- Merging game data and description...")
+        data = pd.merge(left=df, right=desc, on='appid')
+
+        print('- Writing processed processed Steam data and descriptions to JSON file...')
+        data.to_json(STEAM_JSON, orient='records')
 
     if os.path.exists(REVIEWS_JSON):
         print(Fore.YELLOW + '- Found existing processed reviews file, skipping this step...')
