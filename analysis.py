@@ -37,17 +37,19 @@ def main():
     # print(steam_df.sort_values('review_score', ascending=False)[['name', 'review_score']].head(20))
     
     # Review score distribution
-    sb.histplot(data=steam_df, x='review_score', bins=10)
+    sb.histplot(data=steam_df, x='review_score', bins=10).set(title="Review Score Distribution", ylabel="Count", xlabel="Review Score")
     plt.show()
 
     # Price distribution
-    sb.histplot(data=steam_df, x='price', bins=8)
+    # df = steam_df.loc[steam_df['price'] <= 100]
+    sb.histplot(data=steam_df, x='price', bins=8).set(title="Price Distribution", ylabel="Count", xlabel="Price")
     plt.show()
 
     # Owners distribution
+    print(steam_df['owners'].nunique())
     owners_order = map(rename_owners, sorted(steam_df['owners'].unique(), key=sort_owners))
     steam_df['owners'] = steam_df['owners'].apply(rename_owners)
-    sb.countplot(data=steam_df, order=owners_order, x='owners')
+    sb.countplot(data=steam_df, order=owners_order, x='owners').set(title="Owners Distribution", ylabel="Count", xlabel="Number of Owners")
     plt.show()
 
     # ProtonDB rating histogram
@@ -55,7 +57,7 @@ def main():
         data=proton_df[-(proton_df['protondb_tier'].isin(['unknown', 'pending']))],
         x='protondb_tier',
         order=['borked', 'bronze', 'silver', 'gold', 'platinum'],
-    )
+    ).set(title="ProtonDB Tiers Distribution", ylabel="Count", xlabel="ProtonDB Tiers")
     plt.show()
     
     steam_df['release_year'] = steam_df['release_date'].apply(lambda x: x.year)
@@ -63,17 +65,13 @@ def main():
 
     print(hltb_df[hltb_df.notnull()])
 
-    main_per_year = merged.groupby('release_year')[['main_time', 'extra_time', 'completionist_time']].mean().reset_index()
+    main_per_year = merged.groupby('release_year')[['main_time', 'extras_time', 'completionist_time']].mean().reset_index()
 
-    sb.barplot(data=main_per_year, x='release_year', y='main_time')
+    sb.barplot(data=main_per_year, x='release_year', y='main_time').set(title="Average Main Story Time per Release Year", ylabel="Average Main Story Time", xlabel="Release Year")
     plt.show()
-    sb.barplot(data=main_per_year, x='release_year', y='extra_time')
+    sb.barplot(data=main_per_year, x='release_year', y='extras_time').set(title="Average Main Story + Extras Time per Release Year", ylabel="Average Main Story + Extras Time", xlabel="Release Year")
     plt.show()
-
-    sb.barplot(data=main_per_year, x='release_year', y='completionist_time')
-    # sb.displot(data=merged, x='main_time', hue='release_year', multiple='fill')
-    #sb.displot(data=merged, x='main_time', hue='release_year')
-    
+    sb.barplot(data=main_per_year, x='release_year', y='completionist_time').set(title="Average Completionist Time per Release Year", ylabel="Average Completionist Time", xlabel="Release Year")
     plt.show()
 
 
