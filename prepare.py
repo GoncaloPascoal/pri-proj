@@ -6,7 +6,6 @@ import json, colorama, os.path
 from colorama import Fore, Style
 
 STEAM_JSON = 'data/steam.json'
-DESCRIPTIONS_JSON = 'data/descriptions.json'
 REVIEWS_JSON = 'data/reviews.json'
 HLTB_JSON = 'data/hltb.json'
 PROTON_DB_JSON = 'data/proton_db.json'
