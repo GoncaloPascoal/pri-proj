@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import json, colorama, os.path
 from colorama import Fore, Style
+from reviews import convert_types
 
 STEAM_JSON = 'data/steam.json'
 DESCRIPTIONS_JSON = 'data/descriptions.json'
@@ -39,10 +40,25 @@ def process_steam_description_data(df):
 def convert_dataframe_to_dict(df, unique_appid=True):
     dct = {}
 
-    for _, row in df.iterrows():
-        row = row.replace({np.nan: None})
-        appid = row['appid']
-        rest = row.to_dict()
+    for i in range(len(df.index)):
+        appid = int(df.loc[i, 'appid'])
+        rest = {}
+
+        for col in df.columns:
+            rest[col] = df.loc[i, col]
+
+            if pd.isnull(rest[col]):
+                rest[col] = None
+            
+            if type(rest[col]) == np.int64:
+                rest[col] = int(rest[col])
+            
+            if type(rest[col]) == np.float64:
+                rest[col] = float(rest[col])
+            
+            if type(rest[col]) == np.bool_:
+                rest[col] = bool(rest[col])
+        
         del rest['appid']
 
         if unique_appid:
@@ -79,6 +95,17 @@ def main():
         print("- Merging game data and description...")
         data = pd.merge(left=df, right=desc, on='appid')
 
+        convert_types(data, {
+            'appid': int,
+            'required_age': int,
+            'achievements': int,
+            'positive_ratings': int,
+            'negative_ratings': int,
+            'average_playtime': int,
+            'median_playtime': int,
+            'price': float,
+        })
+
         print('- Writing processed processed Steam data and descriptions to JSON file...')
         data.to_json(STEAM_JSON, orient='records')
 
@@ -87,6 +114,17 @@ def main():
     else:
         print(Fore.CYAN + '- Reading reviews CSV...')
         reviews_df = pd.read_csv('data/reviews.csv')
+
+        convert_types(reviews_df, {
+            'appid': int,
+            'author_steamid': int,
+            'playtime_at_review': int,
+            'created': int,
+            'updated': int,
+            'votes_up': int,
+            'votes_funny': int,
+            'vote_score': float,
+        })
 
         print('- Grouping reviews by appid...')
         reviews_dict = convert_dataframe_to_dict(reviews_df, unique_appid=False)
@@ -100,6 +138,16 @@ def main():
         print(Fore.CYAN + '- Reading HLTB CSV...')
         hltb_df = pd.read_csv('data/hltb.csv')
 
+        convert_types(hltb_df, {
+            'appid': int,
+            'main_time': 'Int64',
+            'extras_time': 'Int64',
+            'completionist_time': 'Int64',
+            'main_reports': 'Int64',
+            'extras_reports': 'Int64',
+            'completionist_reports': 'Int64',
+        })
+
         print('- Reshaping data for JSON format...')
         hltb_dict = convert_dataframe_to_dict(hltb_df)
 
@@ -111,6 +159,11 @@ def main():
     else:
         print(Fore.CYAN + '- Reading ProtonDB CSV...')
         proton_db_df = pd.read_csv('data/proton_db.csv')
+
+        convert_types(proton_db_df, {
+            'appid': int,
+            'protondb_reports': 'Int64',
+        })
 
         print('- Reshaping data for JSON format...')
         proton_db_dict = convert_dataframe_to_dict(proton_db_df)
