@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 from prepare import process_steam_data
 
+MIN_REPORTS = 5
+
 def sort_owners(x):
     return int(x.split('-')[0])
 
@@ -25,7 +27,6 @@ def rename_owners(x):
 
 def main():
     steam_df = pd.read_csv('data/steam.csv')
-    descriptions_df = pd.read_json('data/descriptions.json')
     hltb_df = pd.read_csv('data/hltb.csv')
     proton_df = pd.read_csv('data/proton_db.csv')
     reviews_df = pd.read_csv('data/reviews.csv')
@@ -37,12 +38,12 @@ def main():
     # print(steam_df.sort_values('review_score', ascending=False)[['name', 'review_score']].head(20))
     
     # Review score distribution
-    sb.histplot(data=steam_df, x='review_score', bins=10).set(title="Review Score Distribution", ylabel="Count", xlabel="Review Score")
+    sb.histplot(data=steam_df, x='review_score', bins=20).set(title="Review Score Distribution", ylabel="Count", xlabel="Review Score")
     plt.show()
 
     # Price distribution
     df = steam_df.loc[steam_df['price'] <= 50]
-    sb.histplot(data=df, x='price', bins=200).set(title="Price Distribution (< 50$)", ylabel="Count", xlabel="Price")
+    sb.histplot(data=df, x='price', binwidth=2.5).set(title="Price Distribution (< 50$)", ylabel="Count", xlabel="Price")
     plt.show()
 
     steam_df['decimal'] = steam_df['price'] % 1
@@ -67,18 +68,25 @@ def main():
     steam_df['release_year'] = steam_df['release_date'].apply(lambda x: x.year)
     merged = pd.merge(steam_df, hltb_df, on='appid')
 
-    print(hltb_df[hltb_df.notnull()])
+    merged = merged.loc[merged['main_reports'] >= MIN_REPORTS]
+    merged = merged.loc[merged['extras_reports'] >= MIN_REPORTS]
+    merged = merged.loc[merged['completionist_reports'] >= MIN_REPORTS]
 
-    main_per_year = merged.groupby('release_year')[['main_time', 'extras_time', 'completionist_time']].mean().reset_index()
+    merged['main_time'] = merged['main_time'].div(60)
+    merged['extras_time'] = merged['extras_time'].div(60)
+    merged['completionist_time'] = merged['completionist_time'].div(60)
 
-    sb.barplot(data=main_per_year, x='release_year', y='main_time').set(title="Average Main Story Time per Release Year", ylabel="Average Main Story Time", xlabel="Release Year")
+    main_per_year = merged.groupby('release_year')[['main_time', 'extras_time', 'completionist_time']].median().reset_index()
+
+    sb.barplot(data=main_per_year, x='release_year', y='main_time') \
+        .set(title="Median Main Story Time per Release Year", ylabel="Median Main Story Time (in hours)", xlabel="Release Year")
     plt.show()
-    sb.barplot(data=main_per_year, x='release_year', y='extras_time').set(title="Average Main Story + Extras Time per Release Year", ylabel="Average Main Story + Extras Time", xlabel="Release Year")
+    sb.barplot(data=main_per_year, x='release_year', y='extras_time') \
+        .set(title="Median Main Story + Extras Time per Release Year", ylabel="Median Main Story + Extras Time (in hours)", xlabel="Release Year")
     plt.show()
-    sb.barplot(data=main_per_year, x='release_year', y='completionist_time').set(title="Average Completionist Time per Release Year", ylabel="Average Completionist Time", xlabel="Release Year")
+    sb.barplot(data=main_per_year, x='release_year', y='completionist_time') \
+        .set(title="Median Completionist Time per Release Year", ylabel="Median Completionist Time (in hours)", xlabel="Release Year")
     plt.show()
-
-
 
 
 if __name__ == '__main__':
