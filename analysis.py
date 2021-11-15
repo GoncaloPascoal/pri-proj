@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from prepare import process_steam_data
 
 MIN_REPORTS = 5
+PROTON_DB_TIERS_ALL = ['unknown', 'pending', 'borked', 'bronze', 'silver', 'gold', 'platinum']
+PROTON_DB_TIERS = ['borked', 'bronze', 'silver', 'gold', 'platinum']
 
 def sort_owners(x):
     return int(x.split('-')[0])
@@ -61,11 +63,35 @@ def main():
     sb.countplot(
         data=proton_df[-(proton_df['protondb_tier'].isin(['unknown', 'pending']))],
         x='protondb_tier',
-        order=['borked', 'bronze', 'silver', 'gold', 'platinum'],
+        order=PROTON_DB_TIERS,
     ).set(title="ProtonDB Tiers Distribution", ylabel="Count", xlabel="ProtonDB Tiers")
     plt.show()
     
     steam_df['release_year'] = steam_df['release_date'].apply(lambda x: x.year)
+    merged = pd.merge(steam_df, proton_df, on='appid')
+
+    # merged['protondb_tier'] = merged['protondb_tier'].replace({
+    #     'pending': 'unknown',
+    #     'borked': 'unsatisfactory',
+    #     'bronze': 'unsatisfactory',
+    #     'silver': 'unsatisfactory',
+    #     'gold': 'satisfactory',
+    #     'platinum': 'satisfactory',
+    #     'native': 'satisfactory',
+    # })
+
+    merged = merged[merged['release_year'] >= 2007]
+    merged = merged[-merged['protondb_tier'].isin(['unknown', 'pending'])]
+    merged = merged.groupby('release_year')['protondb_tier'].value_counts(normalize=True) \
+        .mul(100).rename('proton_db_tier_percent').reset_index()
+
+    g = sb.histplot(data=merged, x='release_year', hue='protondb_tier', 
+        weights='proton_db_tier_percent', discrete=True, multiple='stack', shrink=0.8,
+        hue_order=['native', 'platinum', 'gold', 'silver', 'bronze', 'borked'],
+        palette=['forestgreen', 'lightsteelblue', 'gold', 'slategrey', 'chocolate', 'firebrick'])
+    g.set(title='ProtonDB tier distribution per release year')
+    plt.show()
+
     merged = pd.merge(steam_df, hltb_df, on='appid')
 
     merged = merged.loc[merged['main_reports'] >= MIN_REPORTS]
