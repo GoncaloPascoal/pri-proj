@@ -1,5 +1,4 @@
 
-from pandas.core.reshape.merge import merge
 import seaborn as sb
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -44,19 +43,46 @@ def main():
     plt.show()
 
     # Price distribution
-    df = steam_df.loc[steam_df['price'] <= 50]
-    sb.histplot(data=df, x='price', binwidth=2.5).set(title="Price Distribution (< 50$)", ylabel="Count", xlabel="Price")
+    df = steam_df.loc[steam_df['price'] <= 60]
+    g = sb.histplot(data=df, x='price', binwidth=2.5)
+    g.set(title="Price Distribution (up to 60$)", ylabel="Count", xlabel="Price")
+    g.bar_label(g.containers[0])
     plt.show()
 
-    steam_df['decimal'] = steam_df['price'] % 1
-    sb.histplot(data=steam_df, x='decimal', binwidth=0.01).set(title="Decimal Part of the Price Distribution", ylabel="Count", xlabel="Decimal Part of the Price")
+    # steam_df['decimal'] = steam_df['price'] % 1
+    # sb.histplot(data=steam_df, x='decimal', binwidth=0.01).set(title="Decimal Part of the Price Distribution", ylabel="Count", xlabel="Decimal Part of the Price")
+    # plt.show()
+
+    # Number of games released per year
+    steam_df['release_year'] = steam_df['release_date'].apply(lambda x: x.year)
+    df = steam_df.groupby('release_year')['appid'].count().rename('num_games').reset_index()
+    df = df[df['release_year'] < 2019]
+    g = sb.lineplot(data=df, x='release_year', y='num_games')
+    plt.show()
+
+    # Indie games per year
+    df = steam_df.copy()
+    df = df[df['release_year'] >= 2007]
+    df['indie'] = df['genres'].apply(lambda x: 'Indie' in x)
+    df = df.groupby('release_year')['indie'].value_counts(normalize=True).mul(100).rename('indie_percent').reset_index()
+    g = sb.histplot(data=df, x='release_year', hue='indie', weights='indie_percent', 
+        discrete=True, multiple='stack', shrink=0.8, hue_order=[False, True],
+        palette=['firebrick', 'forestgreen'])
+    g.set(
+            title='Percentage of Games within the Indie Genre',
+            ylabel='Percentage',
+            xlabel='Release Year',
+        )
+    g.get_legend().set_title('Indie')
+    g.bar_label(g.containers[0], fmt='%.2f')
     plt.show()
 
     # Owners distribution
-    print(steam_df['owners'].nunique())
     owners_order = map(rename_owners, sorted(steam_df['owners'].unique(), key=sort_owners))
     steam_df['owners'] = steam_df['owners'].apply(rename_owners)
-    sb.countplot(data=steam_df, order=owners_order, x='owners').set(title="Owners Distribution", ylabel="Count", xlabel="Number of Owners")
+    g = sb.countplot(data=steam_df, order=owners_order, x='owners')
+    g.set(title="Owners Distribution", ylabel="Count", xlabel="Number of Owners")
+    g.bar_label(g.containers[0])
     plt.show()
 
     # ProtonDB rating histogram
@@ -67,7 +93,6 @@ def main():
     ).set(title="ProtonDB Tiers Distribution", ylabel="Count", xlabel="ProtonDB Tiers")
     plt.show()
     
-    steam_df['release_year'] = steam_df['release_date'].apply(lambda x: x.year)
     merged = pd.merge(steam_df, proton_df, on='appid')
 
     # merged['protondb_tier'] = merged['protondb_tier'].replace({
@@ -90,6 +115,7 @@ def main():
         hue_order=['native', 'platinum', 'gold', 'silver', 'bronze', 'borked'],
         palette=['forestgreen', 'lightsteelblue', 'gold', 'slategrey', 'chocolate', 'firebrick'])
     g.set(title='ProtonDB tier distribution per release year')
+    g.get_legend().set_title('ProtonDB Tier')
     plt.show()
 
     merged = pd.merge(steam_df, hltb_df, on='appid')
