@@ -39,18 +39,27 @@ def main():
 
     session = FuturesSession(max_workers=10)
     
-    futures = []
-    for appid in get_missing_appids(appids):
-        future = session.get(f'https://www.protondb.com/api/v1/reports/summaries/{appid}.json')
-        future.appid = appid
-        futures.append(future)
-
     try:
         already_done_df = pd.read_csv(PROTON_CSV)
         print(Fore.YELLOW + '- Found existing proton db file, skipping calls for existing games...')
         res = already_done_df.to_dict('records') # Lets continue from where we left off
     except FileNotFoundError:
         res = []
+    
+    futures = []
+    games = games.set_index('appid')
+    for appid in get_missing_appids(appids):
+        if 'linux' in set(games.loc[appid, 'platforms'].split(';')):
+            res.append({
+                'appid': appid,
+                'protondb_reports': 0,
+                'protondb_tier': 'native',
+            })
+            continue
+
+        future = session.get(f'https://www.protondb.com/api/v1/reports/summaries/{appid}.json')
+        future.appid = appid
+        futures.append(future)
 
     print(Fore.CYAN + '- Fetching proton reports and tier using the Proton DB API...\n' + Fore.RESET)
     for i, future in enumerate(tqdm(futures)):
