@@ -1,9 +1,12 @@
 
+DEPENDENCIES = pandas seaborn beautifulsoup4 lxml steamreviews colorama \
+howlongtobeatpy requests requests_futures tqdm
+
 all : install-dependencies reviews hltb proton-db steam-spy prepare
 
 # Installs necessary dependencies using pip, Python's package installer
 install-dependencies : /usr/bin/pip3
-	@for dep in pandas seaborn beautifulsoup4 lxml steamreviews colorama howlongtobeatpy requests requests_futures tqdm; do \
+	@for dep in $(DEPENDENCIES); do \
 		echo "Installing $$dep..." ; \
 		pip3 install $$dep > /dev/null ; \
 	done
@@ -39,6 +42,6 @@ clean-json : /usr/bin/rm
 clean : clean-json
 	rm -f data/reviews.csv data/hltb.csv data/proton_db.csv data/steam_updated.csv
 
-# Data analysis
+# Perform exploratory data analysis
 analysis :
 	@python3 analysis.py
