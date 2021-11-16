@@ -36,8 +36,8 @@ def main():
 
     # print(steam_df.sort_values('review_score', ascending=False)[['name', 'review_score']].head(20))
     
-    descriptions_df = pd.read_json('data/steam.json')[['appid', 'detailed_description']]
-    descriptions_df['word_count'] = descriptions_df['detailed_description'].apply(lambda x: len(x.split()))
+    # descriptions_df = pd.read_json('data/steam.json')[['appid', 'detailed_description']]
+    # descriptions_df['word_count'] = descriptions_df['detailed_description'].apply(lambda x: len(x.split()))
 
     # Description word count
     # sb.histplot(data=descriptions_df, x='word_count', bins=50, binrange=(0, 2000)).set(
@@ -102,6 +102,11 @@ def main():
     df = steam_df.groupby('release_year')['appid'].count().rename('num_games').reset_index()
     df = df[df['release_year'] < 2019]
     g = sb.lineplot(data=df, x='release_year', y='num_games')
+    g.set(
+        xlabel='Release Year',
+        ylabel='Number of games',
+        title='Number of games released per year'
+    )
     plt.show()
 
     # Indie games per year
@@ -162,6 +167,7 @@ def main():
         palette=['forestgreen', 'lightsteelblue', 'gold', 'slategrey', 'chocolate', 'firebrick'])
     g.set(title='ProtonDB tier distribution per release year')
     g.get_legend().set_title('ProtonDB Tier')
+    g.set(xlabel='Release Year')
     plt.show()
 
     hltb_df = pd.read_csv('data/hltb.csv')
