@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from prepare import process_steam_data
 
 MIN_REPORTS = 5
-PROTON_DB_TIERS_ALL = ['unknown', 'pending', 'borked', 'bronze', 'silver', 'gold', 'platinum']
-PROTON_DB_TIERS = ['borked', 'bronze', 'silver', 'gold', 'platinum']
+PROTON_DB_TIERS = ['native', 'platinum', 'gold', 'silver', 'bronze', 'borked', 'pending', 'unknown']
+PROTON_DB_COLORS = ['forestgreen', 'lightsteelblue', 'gold', 'slategrey', 'chocolate', 'firebrick', 'darkslategrey', 'black']
 
 def sort_owners(x):
     return int(x.split('-')[0])
@@ -89,7 +89,7 @@ def main():
     # Price distribution
     df = steam_df.loc[steam_df['price'] <= 60]
     g = sb.histplot(data=df, x='price', binwidth=2.5)
-    g.set(title="Price Distribution (up to 60$)", ylabel="Count", xlabel="Price")
+    g.set(title='Game Price Distribution (up to $60)', ylabel='Count', xlabel='Price')
     g.bar_label(g.containers[0])
     plt.show()
 
@@ -100,12 +100,13 @@ def main():
     # Number of games released per year
     steam_df['release_year'] = steam_df['release_date'].apply(lambda x: x.year)
     df = steam_df.groupby('release_year')['appid'].count().rename('num_games').reset_index()
+    df = df[df['release_year'] >= 2007]
     df = df[df['release_year'] < 2019]
     g = sb.lineplot(data=df, x='release_year', y='num_games')
     g.set(
         xlabel='Release Year',
-        ylabel='Number of games',
-        title='Number of games released per year'
+        ylabel='Number of Games',
+        title='Number of Games Released per Year (2007-2018)'
     )
     plt.show()
 
@@ -118,7 +119,7 @@ def main():
         discrete=True, multiple='stack', shrink=0.8, hue_order=[False, True],
         palette=['firebrick', 'forestgreen'])
     g.set(
-            title='Percentage of Games within the Indie Genre',
+            title='Percentage of Games within the Indie Genre Per Year',
             ylabel='Percentage',
             xlabel='Release Year',
         )
@@ -130,18 +131,21 @@ def main():
     owners_order = map(rename_owners, sorted(steam_df['owners'].unique(), key=sort_owners))
     steam_df['owners'] = steam_df['owners'].apply(rename_owners)
     g = sb.countplot(data=steam_df, order=owners_order, x='owners')
-    g.set(title="Owners Distribution", ylabel="Count", xlabel="Number of Owners")
+    g.set(title='No. of Owners Distribution', ylabel='Count', xlabel='Number of Owners')
     g.bar_label(g.containers[0])
     plt.show()
     
     proton_df = pd.read_csv('data/proton_db.csv')
 
     # ProtonDB rating histogram
-    sb.countplot(
-        data=proton_df[-(proton_df['protondb_tier'].isin(['unknown', 'pending']))],
+    g = sb.countplot(
+        data=proton_df[-(proton_df['protondb_tier'].isin(['unknown']))],
         x='protondb_tier',
-        order=PROTON_DB_TIERS,
-    ).set(title="ProtonDB Tiers Distribution", ylabel="Count", xlabel="ProtonDB Tiers")
+        order=PROTON_DB_TIERS[:7],
+        palette=PROTON_DB_COLORS[:7],
+    )
+    g.set(title='ProtonDB Tier Distribution (Count)', ylabel='Count', xlabel='ProtonDB Tiers')
+    g.bar_label(g.containers[0])
     plt.show()
     
     merged = pd.merge(steam_df, proton_df, on='appid')
@@ -163,9 +167,9 @@ def main():
 
     g = sb.histplot(data=merged, x='release_year', hue='protondb_tier', 
         weights='proton_db_tier_percent', discrete=True, multiple='stack', shrink=0.8,
-        hue_order=['native', 'platinum', 'gold', 'silver', 'bronze', 'borked'],
-        palette=['forestgreen', 'lightsteelblue', 'gold', 'slategrey', 'chocolate', 'firebrick'])
-    g.set(title='ProtonDB tier distribution per release year')
+        hue_order=PROTON_DB_TIERS[:6],
+        palette=PROTON_DB_COLORS[:6])
+    g.set(title='ProtonDB Tier Distribution per Release Year (Percentage)')
     g.get_legend().set_title('ProtonDB Tier')
     g.set(xlabel='Release Year')
     plt.show()
@@ -173,6 +177,7 @@ def main():
     hltb_df = pd.read_csv('data/hltb.csv')
 
     merged = pd.merge(steam_df, hltb_df, on='appid')
+    merged = merged[merged['release_year'] >= 2008]
 
     merged = merged.loc[merged['main_reports'] >= MIN_REPORTS]
     merged = merged.loc[merged['extras_reports'] >= MIN_REPORTS]
@@ -184,14 +189,19 @@ def main():
 
     main_per_year = merged.groupby('release_year')[['main_time', 'extras_time', 'completionist_time']].median().reset_index()
 
-    sb.barplot(data=main_per_year, x='release_year', y='main_time') \
-        .set(title="Median Main Story Time per Release Year", ylabel="Median Main Story Time (in hours)", xlabel="Release Year")
+    g = sb.barplot(data=main_per_year, x='release_year', y='main_time')
+    g.set(title='Median Main Story Time per Release Year (2008-2019)', ylabel='Main Story Time (in hours)', xlabel='Release Year')
+    g.bar_label(g.containers[0], fmt='%.1f')
     plt.show()
-    sb.barplot(data=main_per_year, x='release_year', y='extras_time') \
-        .set(title="Median Main Story + Extras Time per Release Year", ylabel="Median Main Story + Extras Time (in hours)", xlabel="Release Year")
+    
+    g = sb.barplot(data=main_per_year, x='release_year', y='extras_time')
+    g.set(title='Median Main Story + Extras Time per Release Year (2008-2019)', ylabel='Main Story + Extras Time (in hours)', xlabel='Release Year')
+    g.bar_label(g.containers[0], fmt='%.1f')
     plt.show()
-    sb.barplot(data=main_per_year, x='release_year', y='completionist_time') \
-        .set(title="Median Completionist Time per Release Year", ylabel="Median Completionist Time (in hours)", xlabel="Release Year")
+    
+    g = sb.barplot(data=main_per_year, x='release_year', y='completionist_time')
+    g.set(title='Median Completionist Time per Release Year (2008-2019)', ylabel='Completionist Time (in hours)', xlabel='Release Year')
+    g.bar_label(g.containers[0], fmt='%.1f')
     plt.show()
 
 
