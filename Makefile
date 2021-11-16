@@ -22,7 +22,7 @@ steam-spy : /usr/bin/python3 data/steam.csv
 # Fetches information from HowLongToBeat website (regarding the expected
 # length of a game based on user reports)
 hltb : /usr/bin/python3
-	@python3 hltb.py
+	@python3 hltb_promises.py
 
 # Gets number of reports and game compatibility tier from ProtonDB
 proton-db : /usr/bin/python3

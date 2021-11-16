@@ -6,7 +6,7 @@ from tqdm import tqdm
 import colorama
 from colorama import Fore, Style
 
-REVIEWS_PER_GAME = 5
+REVIEWS_PER_GAME = 15
 
 def convert_types(df, types):
     for key, data_type in types.items():
