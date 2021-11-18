@@ -1,121 +1,155 @@
-
 import pandas as pd
-import asyncio
-from howlongtobeatpy import HowLongToBeat, HowLongToBeatEntry
+from bs4 import BeautifulSoup
+from requests_futures.sessions import FuturesSession
+from tqdm import tqdm
 from reviews import convert_types
-from colorama import Fore, Style
+import re
 
 HLTB_CSV = 'data/hltb.csv'
-SIMULTANEOUS_TASKS = 1400
-CHECKPOINT = 2800
 
-def get_minutes(time_unit):
-    return 60 if time_unit == 'Hours' else 1 # 'Hours', 'Mins'
+HEADERS = {
+    'content-type': 'application/x-www-form-urlencoded',
+    'accept': '*/*',
+    'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0"
+}
 
-def get_time(time, time_unit, time_label):
-    if time == -1 or time_unit == None or time_label == None:
-        return None
-    if type(time) is str:
-        if '½' in time:
-            time = int(time[:len(time) -1]) + 0.5
-        else:
-            time = int(time)
-    return time * get_minutes(time_unit)
+def craft_game_search_future(game_name, session : FuturesSession):
+    payload = {
+        'queryString': game_name,
+        't': 'games',
+        'sorthead': 'popular',
+        'sortd': 'Normal Order',
+        'plat': '',
+        'length_type': 'main',
+        'length_min': '',
+        'length_max': '',
+        'detail': "hide_dlc"
+    }
 
-async def get_game_entry_from_hltb(hltb, name, appid):
-    results = await hltb.async_search(name, similarity_case_sensitive=False)
-    if results is None or len(results) == 0:
-        return (HowLongToBeatEntry(), appid)
+    return session.post('https://howlongtobeat.com/search_results.php', data=payload, headers=HEADERS)
+
+def get_game_hltb_url_future(future, session : FuturesSession):
+    r = future.result()
+
+    assert r.status_code == 200
+    if 'No results for' in r.text:
+        return 'No results'
+
+    hltb_url = BeautifulSoup(r.text, features='lxml').find('a')['href']
+
+    return session.get('https://howlongtobeat.com/' + hltb_url, headers=HEADERS)
+
+def empty_game_playtime(appid):
+    return {
+        "appid" : appid,
+        "Main Story" : None,
+        "Main + Extras" : None,
+        "Completionists" : None,
+    }
+
+def convert_to_minutes(hm_string):
+    match = re.search(r'((\d+)h\s?)?((\d+)m)?', hm_string)
+    
+    if match.group(2) == None:
+        h = 0
     else:
-        return (results[0], appid)
+        h = int(match.group(2))
+    
+    if match.group(4) == None:
+        m = 0
+    else:
+        m = int(match.group(4))
+    
+    return int(h * 60 + m)
 
-def add_game(games, id, game_entry):
-    return games.append({
-        'appid': id,
-        'main_time'         : get_time(game_entry.gameplay_main         , game_entry.gameplay_main_unit         , game_entry.gameplay_main_label         ),
-        'extras_time'        : get_time(game_entry.gameplay_main_extra   , game_entry.gameplay_main_extra_unit   , game_entry.gameplay_main_extra_label   ),
-        'completionist_time': get_time(game_entry.gameplay_completionist, game_entry.gameplay_completionist_unit, game_entry.gameplay_completionist_label)
-    }, ignore_index=True)
+def get_game_playtime(game_url_future, appid):
+    if game_url_future == 'No results':
+        return empty_game_playtime(appid)
 
-def get_game_entries():
-    try:
-        existing_times = pd.read_csv(HLTB_CSV)
-        print(Fore.YELLOW + '- Found existing game times file, skipping API calls for existing games...')
-        return existing_times
-    except FileNotFoundError:
-        return pd.DataFrame()
+    r = game_url_future.result()
 
-def get_missing_appids(games, game_entries):
-    appids       = set(games['appid'])
-    already_done = set()
-    if 'appid' in game_entries.columns:
-        already_done = set(game_entries['appid'])
-    return appids - already_done
+    soup = BeautifulSoup(r.text, features='lxml')
+    table = soup.find('table', {'class' : 'game_main_table'})
+    if table == None:
+        return empty_game_playtime(appid)
 
-def get_gameplay_times(games, game_entries):
-    hltb = HowLongToBeat(1.0)
+    table_entries = table.find_all("tbody")
+    
+    res = {
+        "appid" : appid
+    }
 
-    tasks = [get_game_entry_from_hltb(hltb, row['name'], row['appid']) for _, row in games.iterrows()]
-    completed = asyncio.run(wait_for_tasks(tasks))
-    for completed_task in completed:
-        game_entry, appid = completed_task.result()
-        game_entries = add_game(game_entries, appid, game_entry)
-    return game_entries
-
-def get_games_to_search(games, game_entries):
-    missing_appids = get_missing_appids(games, game_entries)
-    return games.loc[games['appid'].isin(missing_appids)]
-
-async def wait_for_tasks(tasks):
-    completed = set()
-    while len(tasks) > 0:
-        if len(tasks) > SIMULTANEOUS_TASKS:
-            partial_tasks = tasks[:SIMULTANEOUS_TASKS]
-            tasks = tasks[SIMULTANEOUS_TASKS:]
+    for category, entry in zip(('Main Story', 'Main + Extras', 'Completionists'), table_entries):
+        if category not in str(entry):
+            res[category] = None
         else:
-            partial_tasks = tasks
-            tasks = []
+            polled = entry.find_all("td")[1].text.strip()
+            if "K" in polled:
+                n_polled = int(1000 * float(polled[:-1]))
+            else:
+                n_polled = int(polled)
 
-        more_completed, pending = await asyncio.wait(partial_tasks)
-        completed = completed.union(more_completed)
+            res[category] = convert_to_minutes(entry.find_all("td")[2].text)
+            res[f"{category} polled"] = n_polled
+    
+    return res
 
-        while len(pending) > 0:
-            more_completed, pending = await asyncio.wait(list(pending))
-            completed = completed.union(more_completed)
-
-    return completed 
-
-def save_checkpoint(results):
-    convert_types(results, {
-        'appid': int,
-        'main_time': 'Int64',
-        'extras_time': 'Int64',
-        'completionist_time': 'Int64',
-    })
-    results.to_csv(HLTB_CSV, index=False)
-
-def get_checkpoints(games_to_search):
-    checkpoints = []
-    while len(games_to_search) > CHECKPOINT:
-        checkpoints.append(games_to_search.iloc[:CHECKPOINT])
-        games_to_search = games_to_search.iloc[CHECKPOINT:]
-    checkpoints.append(games_to_search)
-    return checkpoints
+def get_missing_appids(appids):
+    try:
+        already_done_df = pd.read_csv(HLTB_CSV)
+        already_done = set(list(already_done_df["appid"]))
+        return list(set(appids) - already_done)
+    except FileNotFoundError:
+        return appids
 
 def main():
-    print(Fore.MAGENTA + Style.BRIGHT + '\n--- HowLongToBeat Script ---\n')
-
-    print(Fore.CYAN + '- Reading app ids from steam.csv file...')
     games = pd.read_csv('data/steam.csv')
-    game_entries = get_game_entries()
+    appids = list(games['appid'])
+    name_lookup = {appid : name for appid, name in zip(list(games['appid']), list(games['name']))}
 
-    print(Fore.CYAN + '- Fetching game times using the howlongtobeatpy package...' + Fore.RESET)
-    games = get_games_to_search(games, game_entries)
-    for checkpoint in get_checkpoints(games):
-        game_entries = get_gameplay_times(checkpoint, game_entries)
-        save_checkpoint(game_entries)
-    
-    print(Fore.GREEN + '\nDone.\n' + Fore.RESET)
+    session_1 = FuturesSession(max_workers=10)
+    session_2 = FuturesSession(max_workers=10)
 
-if __name__ == '__main__':
+    try:
+        already_done_df = pd.read_csv(HLTB_CSV)
+        res = already_done_df.to_dict('records') # Lets continue from where we left off
+    except FileNotFoundError:
+        res = []
+
+    missing_appids = get_missing_appids(appids)
+
+    batches = [missing_appids[x:x+300] for x in range(0, len(missing_appids), 300)]
+    # We need to do batches in order save progress regularly     
+
+    for batch in tqdm(batches):
+        futures_urls = [(appid, craft_game_search_future(name_lookup[appid], session_1)) for appid in batch]
+
+        futures_results = [(appid, get_game_hltb_url_future(future, session_2)) for appid, future in futures_urls]
+
+        res.extend([get_game_playtime(future, appid) for appid, future in futures_results])
+
+        df = pd.DataFrame(res).rename(
+            {
+                'Main Story': 'main_time',
+                'Main + Extras': 'extras_time',
+                'Completionists': 'completionist_time',
+                'Main Story polled': 'main_reports',
+                'Main + Extras polled': 'extras_reports',
+                'Completionists polled': 'completionist_reports',
+            }, axis='columns'
+        )
+        convert_types(df, {
+            'appid': int,
+            'main_time': 'Int64',
+            'extras_time': 'Int64',
+            'completionist_time': 'Int64',
+            'main_reports' : "Int64",
+            'extras_reports' : "Int64",
+            'completionist_reports' : "Int64",
+        })
+
+        df.to_csv(HLTB_CSV, index=False)
+
+
+if __name__ == "__main__":
     main()
