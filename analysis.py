@@ -36,24 +36,25 @@ def main():
 
     # print(steam_df.sort_values('review_score', ascending=False)[['name', 'review_score']].head(20))
     
-    # descriptions_df = pd.read_json('data/steam.json')[['appid', 'detailed_description']]
-    # descriptions_df['word_count'] = descriptions_df['detailed_description'].apply(lambda x: len(x.split()))
+    descriptions_df = pd.read_json('data/steam.json')[['appid', 'detailed_description']]
+    descriptions_df['word_count'] = descriptions_df['detailed_description'].apply(lambda x: len(x.split()))
 
     # Description word count
-    # sb.histplot(data=descriptions_df, x='word_count', bins=50, binrange=(0, 2000)).set(
-    #     title='Description Word Count',
-    #     ylabel='Count',
-    # )
-    # plt.show()
+    sb.histplot(data=descriptions_df, x='word_count', bins=50, binrange=(0, 2000)).set(
+        title='Description Word Count',
+        xlabel='Word Count',
+        ylabel='Count',
+    )
+    plt.show()
 
-    # # Review score distribution
-    # steam_df['total_ratings'] = steam_df['positive_ratings'] + steam_df['negative_ratings']
-    # sb.histplot(data=steam_df[steam_df['total_ratings'] >= 50], x='review_score', bins=40).set(
-    #     title="Review Score Distribution",
-    #     ylabel="Count",
-    #     xlabel="Review Score",
-    # )
-    # plt.show()
+    # Review score distribution
+    steam_df['total_ratings'] = steam_df['positive_ratings'] + steam_df['negative_ratings']
+    sb.histplot(data=steam_df[steam_df['total_ratings'] >= 50], x='review_score', bins=40).set(
+        title="Review Score Distribution",
+        ylabel="Count",
+        xlabel="Review Score",
+    )
+    plt.show()
 
     reviews_df = pd.read_csv('data/reviews.csv')
 
@@ -66,8 +67,6 @@ def main():
         names.append(low + '-' + high)
 
     reviews_df['playtime_binned'] = pd.cut(reviews_df['playtime_at_review'], bins)
-
-    print(reviews_df.dtypes)
 
     df = reviews_df.groupby(['playtime_binned', 'recommended'])['appid'].count().rename('rec_count').reset_index()
     df['rec_count'] = df['rec_count'].div(df.groupby('playtime_binned')['rec_count'].transform(lambda x: x.sum())).mul(100)
@@ -90,7 +89,6 @@ def main():
     df = steam_df.loc[steam_df['price'] <= 60]
     g = sb.histplot(data=df, x='price', binwidth=2.5)
     g.set(title='Game Price Distribution (up to $60)', ylabel='Count', xlabel='Price')
-    g.bar_label(g.containers[0])
     plt.show()
 
     # steam_df['decimal'] = steam_df['price'] % 1
@@ -136,6 +134,8 @@ def main():
     plt.show()
     
     proton_df = pd.read_csv('data/proton_db.csv')
+    print('Games with ProtonDB rating:', 
+        len(proton_df[-proton_df['protondb_tier'].isin(['unknown', 'pending'])]))
 
     # ProtonDB rating histogram
     g = sb.countplot(
@@ -191,17 +191,17 @@ def main():
 
     g = sb.barplot(data=main_per_year, x='release_year', y='main_time')
     g.set(title='Median Main Story Time per Release Year (2008-2019)', ylabel='Main Story Time (in hours)', xlabel='Release Year')
-    g.bar_label(g.containers[0], fmt='%.1f')
+    g.bar_label(g.containers[0], fmt='%.2f')
     plt.show()
     
     g = sb.barplot(data=main_per_year, x='release_year', y='extras_time')
     g.set(title='Median Main Story + Extras Time per Release Year (2008-2019)', ylabel='Main Story + Extras Time (in hours)', xlabel='Release Year')
-    g.bar_label(g.containers[0], fmt='%.1f')
+    g.bar_label(g.containers[0], fmt='%.2f')
     plt.show()
     
     g = sb.barplot(data=main_per_year, x='release_year', y='completionist_time')
     g.set(title='Median Completionist Time per Release Year (2008-2019)', ylabel='Completionist Time (in hours)', xlabel='Release Year')
-    g.bar_label(g.containers[0], fmt='%.1f')
+    g.bar_label(g.containers[0], fmt='%.2f')
     plt.show()
 
 
