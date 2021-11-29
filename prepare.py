@@ -94,6 +94,31 @@ def main():
         print("- Merging game data and description...")
         data = pd.merge(left=df, right=desc, on='appid')
 
+        print(Fore.CYAN + '- Reading HLTB CSV...')
+        hltb_df = pd.read_csv('data/hltb.csv')
+
+        convert_types(hltb_df, {
+            'appid': int,
+            'main_time': 'Int64',
+            'extras_time': 'Int64',
+            'completionist_time': 'Int64',
+            'main_reports': 'Int64',
+            'extras_reports': 'Int64',
+            'completionist_reports': 'Int64',
+        })
+
+        data = pd.merge(left=data, right=hltb_df, on='appid')
+
+        print(Fore.CYAN + '- Reading ProtonDB CSV...')
+        proton_db_df = pd.read_csv('data/proton_db.csv')
+
+        convert_types(proton_db_df, {
+            'appid': int,
+            'protondb_reports': 'Int64',
+        })
+
+        data = pd.merge(left=data, right=proton_db_df, on='appid')
+
         convert_types(data, {
             'appid': int,
             'required_age': int,
@@ -130,45 +155,6 @@ def main():
 
         print('- Writing processed review data to JSON file...')
         dict_to_json_file(reviews_dict, REVIEWS_JSON)
-
-    if os.path.exists(HLTB_JSON):
-        print(Fore.YELLOW + '- Found existing processed HLTB file, skipping this step...')
-    else:
-        print(Fore.CYAN + '- Reading HLTB CSV...')
-        hltb_df = pd.read_csv('data/hltb.csv')
-
-        convert_types(hltb_df, {
-            'appid': int,
-            'main_time': 'Int64',
-            'extras_time': 'Int64',
-            'completionist_time': 'Int64',
-            'main_reports': 'Int64',
-            'extras_reports': 'Int64',
-            'completionist_reports': 'Int64',
-        })
-
-        print('- Reshaping data for JSON format...')
-        hltb_dict = convert_dataframe_to_dict(hltb_df)
-
-        print('- Writing processed HLTB data to JSON file...')
-        dict_to_json_file(hltb_dict, HLTB_JSON)
-    
-    if os.path.exists(PROTON_DB_JSON):
-        print(Fore.YELLOW + '- Found existing processed ProtonDB file, skipping this step...')
-    else:
-        print(Fore.CYAN + '- Reading ProtonDB CSV...')
-        proton_db_df = pd.read_csv('data/proton_db.csv')
-
-        convert_types(proton_db_df, {
-            'appid': int,
-            'protondb_reports': 'Int64',
-        })
-
-        print('- Reshaping data for JSON format...')
-        proton_db_dict = convert_dataframe_to_dict(proton_db_df)
-
-        print('- Writing processed ProtonDB data to JSON file...')
-        dict_to_json_file(proton_db_dict, PROTON_DB_JSON)
 
     print(Fore.GREEN + '\nDone.\n' + Style.RESET_ALL)
 
