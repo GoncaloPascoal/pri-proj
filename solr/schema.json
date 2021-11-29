@@ -1,0 +1,14 @@
+{
+    "add-field": [
+        {
+            "name": "appid",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "english",
+            "type": "boolean",
+            "required": true
+        }
+    ]
+}
