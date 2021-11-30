@@ -6,8 +6,79 @@
             "required": true
         },
         {
+            "name": "release_date",
+            "type": "date",
+            "required": true,
+            "docValues": true
+        },
+        {
             "name": "english",
             "type": "boolean",
+            "required": true
+        },
+        {
+            "name": "developer",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "publisher",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "platforms",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "required_age",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "categories",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "genres",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "steamspy_tags",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "achievements",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "positive_ratings",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "negative_ratings",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "average_playtime",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "median_playtime",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "price",
+            "type": "pfloat",
             "required": true
         }
     ]
