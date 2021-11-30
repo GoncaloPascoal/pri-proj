@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<enumsConfig>
+    <enum name="owners">
+        <value>0-20000</value>
+        <value>20000-50000</value>
+        <value>50000-100000</value>
+        <value>100000-200000</value>
+        <value>200000-500000</value>
+        <value>500000-1000000</value>
+        <value>1000000-2000000</value>
+        <value>2000000-5000000</value>
+        <value>5000000-10000000</value>
+        <value>10000000-20000000</value>
+        <value>20000000-50000000</value>
+        <value>50000000-100000000</value>
+        <value>100000000-200000000</value>
+    </enum>
+    <enum name="platform">
+        <value>windows</value>
+        <value>mac</value>
+        <value>linux</value>
+    </enum>
+    <enum name="protondb_tier">
+        <value>unknown</value>
+        <value>pending</value>
+        <value>bronze</value>
+        <value>silver</value>
+        <value>gold</value>
+        <value>platinum</value>
+        <value>native</value>
+    </enum>
+</enumsConfig>

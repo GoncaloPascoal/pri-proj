@@ -1,4 +1,30 @@
 {
+    "add-field-type": [
+        {
+            "name": "enum_owners",
+            "class": "solr.EnumFieldType",
+            "indexed": true,
+            "docValues": true,
+            "enumsConfig": "/enums_config.xml",
+            "enumName": "owners"
+        },
+        {
+            "name": "enum_platform",
+            "class": "solr.EnumFieldType",
+            "indexed": true,
+            "docValues": true,
+            "enumsConfig": "/enums_config.xml",
+            "enumName": "platform"
+        },
+        {
+            "name": "enum_protondb_tier",
+            "class": "solr.EnumFieldType",
+            "indexed": true,
+            "docValues": true,
+            "enumsConfig": "/enums_config.xml",
+            "enumName": "protondb_tier"
+        }
+    ],
     "add-field": [
         {
             "name": "appid",
