@@ -54,8 +54,9 @@
         },
         {
             "name": "platforms",
-            "type": "strings",
-            "required": true
+            "type": "enum_platform",
+            "required": true,
+            "multiValued": true
         },
         {
             "name": "required_age",
@@ -105,7 +106,48 @@
         {
             "name": "price",
             "type": "pfloat",
-            "required": true
+            "required": true,
+            "indexed": true
+        },
+        {
+            "name": "owners",
+            "type": "enum_owners",
+            "required": true,
+            "indexed": true
+        },
+        {
+            "name": "main_time",
+            "type": "pint"
+        },
+        {
+            "name": "main_reports",
+            "type": "pint"
+        },
+        {
+            "name": "extras_time",
+            "type": "pint"
+        },
+        {
+            "name": "extras_reports",
+            "type": "pint"
+        },
+        {
+            "name": "completionist_time",
+            "type": "pint"
+        },
+        {
+            "name": "completionist_reports",
+            "type": "pint"
+        },
+        {
+            "name": "protondb_reports",
+            "type": "pint"
+        },
+        {
+            "name": "protondb_tier",
+            "type": "enum_protondb_tier",
+            "required": true,
+            "indexed": true
         }
     ]
 }
