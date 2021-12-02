@@ -81,55 +81,55 @@ def main():
     print(Fore.CYAN + Style.BRIGHT + '- Reading main Steam data CSV file...')
     df = pd.read_csv('data/steam_updated.csv')
 
+    print(Fore.CYAN + '- Performing data type conversion...')
+    df = process_steam_data(df)
+    
+    print('- Reading description data CSV file...')
+    desc = pd.read_csv('data/steam_description_data.csv')
+    desc = process_steam_description_data(desc)
+
+    print("- Merging game data and description...")
+    data = pd.merge(left=df, right=desc, on='appid')
+
+    print(Fore.CYAN + '- Reading HLTB CSV...')
+    hltb_df = pd.read_csv('data/hltb.csv')
+
+    convert_types(hltb_df, {
+        'appid': int,
+        'main_time': 'Int64',
+        'extras_time': 'Int64',
+        'completionist_time': 'Int64',
+        'main_reports': 'Int64',
+        'extras_reports': 'Int64',
+        'completionist_reports': 'Int64',
+    })
+
+    data = pd.merge(left=data, right=hltb_df, on='appid')
+
+    print(Fore.CYAN + '- Reading ProtonDB CSV...')
+    proton_db_df = pd.read_csv('data/proton_db.csv')
+
+    convert_types(proton_db_df, {
+        'appid': int,
+        'protondb_reports': 'Int64',
+    })
+
+    data = pd.merge(left=data, right=proton_db_df, on='appid')
+
+    convert_types(data, {
+        'appid': int,
+        'required_age': int,
+        'achievements': int,
+        'positive_ratings': int,
+        'negative_ratings': int,
+        'average_playtime': int,
+        'median_playtime': int,
+        'price': float,
+    })
+
     if os.path.exists(STEAM_JSON):
         print(Fore.YELLOW + '- Found existing processed Steam data file, skipping this step...')
     else:
-        print(Fore.CYAN + '- Performing data type conversion...')
-        df = process_steam_data(df)
-        
-        print('- Reading description data CSV file...')
-        desc = pd.read_csv('data/steam_description_data.csv')
-        desc = process_steam_description_data(desc)
-
-        print("- Merging game data and description...")
-        data = pd.merge(left=df, right=desc, on='appid')
-
-        print(Fore.CYAN + '- Reading HLTB CSV...')
-        hltb_df = pd.read_csv('data/hltb.csv')
-
-        convert_types(hltb_df, {
-            'appid': int,
-            'main_time': 'Int64',
-            'extras_time': 'Int64',
-            'completionist_time': 'Int64',
-            'main_reports': 'Int64',
-            'extras_reports': 'Int64',
-            'completionist_reports': 'Int64',
-        })
-
-        data = pd.merge(left=data, right=hltb_df, on='appid')
-
-        print(Fore.CYAN + '- Reading ProtonDB CSV...')
-        proton_db_df = pd.read_csv('data/proton_db.csv')
-
-        convert_types(proton_db_df, {
-            'appid': int,
-            'protondb_reports': 'Int64',
-        })
-
-        data = pd.merge(left=data, right=proton_db_df, on='appid')
-
-        convert_types(data, {
-            'appid': int,
-            'required_age': int,
-            'achievements': int,
-            'positive_ratings': int,
-            'negative_ratings': int,
-            'average_playtime': int,
-            'median_playtime': int,
-            'price': float,
-        })
-
         print('- Writing processed processed Steam data and descriptions to JSON file...')
         data.to_json(STEAM_JSON, orient='records')
 
@@ -150,11 +150,17 @@ def main():
             'vote_score': float,
         })
 
-        print('- Grouping reviews by appid...')
-        reviews_dict = convert_dataframe_to_dict(reviews_df, unique_appid=False)
+        merge_cols = [
+            'appid', 'name', 'release_date', 'price', 'developer', 
+            'publisher', 'platforms', 'genres', 'positive_ratings', 'steamspy_tags',
+            'negative_ratings', 'average_playtime', 'median_playtime', 'short_description'
+        ]
+
+        reviews_df = pd.merge(left=reviews_df, right=data[merge_cols], on='appid')
+        print(reviews_df.dtypes)
 
         print('- Writing processed review data to JSON file...')
-        dict_to_json_file(reviews_dict, REVIEWS_JSON)
+        data.to_json(REVIEWS_JSON, orient='records')
 
     print(Fore.GREEN + '\nDone.\n' + Style.RESET_ALL)
 
