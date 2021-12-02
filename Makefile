@@ -45,3 +45,12 @@ clean : clean-json
 # Perform exploratory data analysis
 analysis :
 	python3 analysis.py
+
+solr : solr/enums_config.json solr/schema.json data/steam.json
+	docker exec $(cn) bin/solr create_core -c games
+	docker cp solr/enums_config.xml $(cn):/enums_config.xml
+	curl -X POST -H 'Content-Type:application/json' \
+	--data-binary solr/schema.json \
+	http://localhost:8983/solr/games/schema
+	docker cp data/steam.json $(cn):/steam.json
+	docker exec $(cn) bin/post -c games /steam.json

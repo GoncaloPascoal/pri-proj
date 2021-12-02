@@ -112,8 +112,7 @@
         {
             "name": "owners",
             "type": "enum_owners",
-            "required": true,
-            "indexed": true
+            "required": true
         },
         {
             "name": "main_time",
@@ -146,8 +145,7 @@
         {
             "name": "protondb_tier",
             "type": "enum_protondb_tier",
-            "required": true,
-            "indexed": true
+            "required": true
         }
     ]
 }
