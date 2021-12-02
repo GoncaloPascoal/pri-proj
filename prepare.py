@@ -19,7 +19,7 @@ def extract_text_from_html(df, col):
 
 def process_steam_data(df):
     df['english'] = df['english'].astype(bool)
-    df['release_date'] = pd.to_datetime(df['release_date'])
+    df['release_date'] = pd.to_datetime(df['release_date']).apply(lambda x: x.isoformat())
     df['owners'] = df['owners'].astype('category')
 
     for col in ['developer', 'publisher', 'platforms', 'categories', 'genres', 'steamspy_tags']:
