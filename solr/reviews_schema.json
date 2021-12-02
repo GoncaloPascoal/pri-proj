@@ -48,6 +48,61 @@
             "required": true
         },
         {
+            "name": "author_steamid",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "playtime_at_review",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "review",
+            "type": "text_en",
+            "required": true
+        },
+        {
+            "name": "created",
+            "type": "pdate",
+            "required": true
+        },
+        {
+            "name": "updated",
+            "type": "pdate",
+            "required": true
+        },
+        {
+            "name": "recommended",
+            "type": "boolean",
+            "required": true
+        },
+        {
+            "name": "votes_up",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "votes_funny",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "vote_score",
+            "type": "pfloat",
+            "required": true
+        },
+        {
+            "name": "steam_purchase",
+            "type": "boolean",
+            "required": true
+        },
+        {
+            "name": "received_for_free",
+            "type": "boolean",
+            "required": true
+        },
+        {
             "name": "name",
             "type": "text_name",
             "required": true,
