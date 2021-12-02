@@ -1,6 +1,38 @@
 {
     "add-field-type": [
         {
+            "name": "text_name",
+            "class": "solr.TextField",
+            "indexAnalyzer": {
+                "tokenizer": {
+                    "class": "solr.StandardTokenizerFactory"
+                },
+                "filters": [
+                    {
+                        "class": "solr.ASCIIFoldingFilterFactory",
+                        "preserveOriginal": true
+                    },
+                    {
+                        "class": "solr.LowercaseFilterFactory"
+                    }
+                ]
+            },
+            "queryAnalyzer": {
+                "tokenizer": {
+                    "class": "solr.StandardTokenizerFactory"
+                },
+                "filters": [
+                    {
+                        "class": "solr.ASCIIFoldingFilterFactory",
+                        "preserveOriginal": true
+                    },
+                    {
+                        "class": "solr.LowercaseFilterFactory"
+                    }
+                ]
+            }
+        },
+        {
             "name": "enum_owners",
             "class": "solr.EnumFieldType",
             "indexed": true,
@@ -33,8 +65,9 @@
         },
         {
             "name": "name",
-            "type": "lowercase",
-            "required": true
+            "type": "text_name",
+            "required": true,
+            "indexed": true
         },
         {
             "name": "release_date",
@@ -48,13 +81,15 @@
         },
         {
             "name": "developer",
-            "type": "strings",
-            "required": true
+            "type": "text_name",
+            "required": true,
+            "multiValued": true
         },
         {
             "name": "publisher",
-            "type": "strings",
-            "required": true
+            "type": "text_name",
+            "required": true,
+            "multiValued": true
         },
         {
             "name": "platforms",
