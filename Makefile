@@ -46,14 +46,29 @@ clean : clean-json
 analysis :
 	python3 analysis.py
 
-solr : solr/enums_config.xml solr/schema.json data/steam.json
+solr-games : solr/enums_config.xml solr/games_schema.json data/steam.json
 	docker exec $(cn) bin/solr create_core -c games
 	docker cp solr/enums_config.xml $(cn):/var/solr/data/games/enums_config.xml
 	curl -X POST -H 'Content-Type:application/json' \
-	--data-binary @solr/schema.json \
+	--data-binary @solr/games_schema.json \
 	http://localhost:8983/solr/games/schema
 	docker cp data/steam.json $(cn):/steam.json
 	docker exec $(cn) bin/post -c games /steam.json
 
-clean-solr :
+solr-reviews : solr/reviews_schema.json data/reviews.json
+	docker exec $(cn) bin/solr create_core -c reviews
+	curl -X POST -H 'Content-Type:application/json' \
+	--data-binary @solr/reviews_schema.json \
+	http://localhost:8983/solr/reviews/schema
+	docker cp data/reviews.json $(cn):/reviews.json
+	docker exec $(cn) bin/post -c reviews /reviews.json
+
+solr : solr-games solr-reviews
+
+clean-solr-games :
 	docker exec $(cn) bin/solr delete -c games
+
+clean-solr-reviews : 
+	docker exec $(cn) bin/solr delete -c reviews
+
+clean-solr : clean-solr-games clean-solr-reviews
