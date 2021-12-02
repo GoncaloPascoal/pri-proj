@@ -23,6 +23,7 @@
     <enum name="protondb_tier">
         <value>unknown</value>
         <value>pending</value>
+        <value>borked</value>
         <value>bronze</value>
         <value>silver</value>
         <value>gold</value>

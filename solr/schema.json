@@ -5,7 +5,7 @@
             "class": "solr.EnumFieldType",
             "indexed": true,
             "docValues": true,
-            "enumsConfig": "/enums_config.xml",
+            "enumsConfig": "enums_config.xml",
             "enumName": "owners"
         },
         {
@@ -13,7 +13,7 @@
             "class": "solr.EnumFieldType",
             "indexed": true,
             "docValues": true,
-            "enumsConfig": "/enums_config.xml",
+            "enumsConfig": "enums_config.xml",
             "enumName": "platform"
         },
         {
@@ -21,7 +21,7 @@
             "class": "solr.EnumFieldType",
             "indexed": true,
             "docValues": true,
-            "enumsConfig": "/enums_config.xml",
+            "enumsConfig": "enums_config.xml",
             "enumName": "protondb_tier"
         }
     ],
@@ -30,12 +30,6 @@
             "name": "appid",
             "type": "pint",
             "required": true
-        },
-        {
-            "name": "release_date",
-            "type": "date",
-            "required": true,
-            "docValues": true
         },
         {
             "name": "english",
