@@ -150,6 +150,9 @@ def main():
             'vote_score': float,
         })
 
+        for col in ['created', 'updated']:
+            reviews_df[col] = pd.to_datetime(reviews_df[col], unit='s').apply(lambda x: x.isoformat())
+
         merge_cols = [
             'appid', 'name', 'release_date', 'price', 'developer', 
             'publisher', 'platforms', 'genres', 'positive_ratings', 'steamspy_tags',
@@ -157,10 +160,9 @@ def main():
         ]
 
         reviews_df = pd.merge(left=reviews_df, right=data[merge_cols], on='appid')
-        print(reviews_df.dtypes)
 
         print('- Writing processed review data to JSON file...')
-        data.to_json(REVIEWS_JSON, orient='records')
+        reviews_df.to_json(REVIEWS_JSON, orient='records')
 
     print(Fore.GREEN + '\nDone.\n' + Style.RESET_ALL)
 
