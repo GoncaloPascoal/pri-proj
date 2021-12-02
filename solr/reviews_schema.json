@@ -1,0 +1,120 @@
+{
+    "add-field-type": [
+        {
+            "name": "text_name",
+            "class": "solr.TextField",
+            "indexAnalyzer": {
+                "tokenizer": {
+                    "class": "solr.StandardTokenizerFactory"
+                },
+                "filters": [
+                    {
+                        "class": "solr.ASCIIFoldingFilterFactory",
+                        "preserveOriginal": true
+                    },
+                    {
+                        "class": "solr.LowercaseFilterFactory"
+                    }
+                ]
+            },
+            "queryAnalyzer": {
+                "tokenizer": {
+                    "class": "solr.StandardTokenizerFactory"
+                },
+                "filters": [
+                    {
+                        "class": "solr.ASCIIFoldingFilterFactory",
+                        "preserveOriginal": true
+                    },
+                    {
+                        "class": "solr.LowercaseFilterFactory"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "enum_platform",
+            "class": "solr.EnumFieldType",
+            "indexed": true,
+            "docValues": true,
+            "enumsConfig": "enums_config.xml",
+            "enumName": "platform"
+        }
+    ],
+    "add-field": [
+        {
+            "name": "appid",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "name",
+            "type": "text_name",
+            "required": true,
+            "indexed": true
+        },
+        {
+            "name": "release_date",
+            "type": "pdate",
+            "required": true
+        },
+        {
+            "name": "developer",
+            "type": "text_name",
+            "required": true,
+            "multiValued": true
+        },
+        {
+            "name": "publisher",
+            "type": "text_name",
+            "required": true,
+            "multiValued": true
+        },
+        {
+            "name": "platforms",
+            "type": "enum_platform",
+            "required": true,
+            "multiValued": true
+        },
+        {
+            "name": "genres",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "steamspy_tags",
+            "type": "strings",
+            "required": true
+        },
+        {
+            "name": "positive_ratings",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "negative_ratings",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "average_playtime",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "median_playtime",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "price",
+            "type": "pfloat",
+            "required": true,
+            "indexed": true
+        },
+        {
+            "name": "short_description",
+            "type": "text_en"
+        }
+    ]
+}

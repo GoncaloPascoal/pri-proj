@@ -57,6 +57,7 @@ solr-games : solr/enums_config.xml solr/games_schema.json data/steam.json
 
 solr-reviews : solr/reviews_schema.json data/reviews.json
 	docker exec $(cn) bin/solr create_core -c reviews
+	docker cp solr/enums_config.xml $(cn):/var/solr/data/reviews/enums_config.xml
 	curl -X POST -H 'Content-Type:application/json' \
 	--data-binary @solr/reviews_schema.json \
 	http://localhost:8983/solr/reviews/schema
