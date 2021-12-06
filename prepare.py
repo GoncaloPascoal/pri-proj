@@ -154,9 +154,7 @@ def main():
             reviews_df[col] = pd.to_datetime(reviews_df[col], unit='s').apply(lambda x: x.isoformat())
 
         merge_cols = [
-            'appid', 'name', 'release_date', 'price', 'developer', 
-            'publisher', 'platforms', 'genres', 'positive_ratings', 'steamspy_tags',
-            'negative_ratings', 'average_playtime', 'median_playtime', 'short_description'
+            'appid', 'name', 'developer', 'steamspy_tags', 'median_playtime',
         ]
 
         reviews_df = pd.merge(left=reviews_df, right=data[merge_cols], on='appid')
