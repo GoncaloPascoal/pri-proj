@@ -1,4 +1,5 @@
 
+from math import log10
 from bs4 import BeautifulSoup
 import numpy as np
 import pandas as pd
@@ -74,6 +75,10 @@ def dict_to_json_file(dct, path):
     with open(path, 'w') as json_file:
         json.dump(dct, json_file, ensure_ascii=False)
 
+def calc_weighted_score(row):
+    return row['review_score'] - (row['review_score'] - 0.5) * \
+        pow(2, -log10(row['total_ratings'] + 1))
+
 def main():
     colorama.init()
     print(Fore.MAGENTA + Style.BRIGHT + '\n--- Data Cleaning and Processing Script ---\n')
@@ -116,12 +121,19 @@ def main():
 
     data = pd.merge(left=data, right=proton_db_df, on='appid')
 
+    data['total_ratings'] = data['positive_ratings'] + data['negative_ratings']
+    data['review_score'] = data['positive_ratings'] / data['total_ratings']
+    data['weighted_score'] = data.apply(calc_weighted_score, axis=1) 
+
     convert_types(data, {
         'appid': int,
         'required_age': int,
         'achievements': int,
         'positive_ratings': int,
         'negative_ratings': int,
+        'total_ratings': int,
+        'review_score': float,
+        'weighted_score': float,
         'average_playtime': int,
         'median_playtime': int,
         'price': float,

@@ -133,6 +133,21 @@
             "required": true
         },
         {
+            "name": "total_ratings",
+            "type": "pint",
+            "required": true
+        },
+        {
+            "name": "review_score",
+            "type": "pfloat",
+            "required": true
+        },
+        {
+            "name": "weighted_score",
+            "type": "pfloat",
+            "required": true
+        },
+        {
             "name": "average_playtime",
             "type": "pint",
             "required": true
