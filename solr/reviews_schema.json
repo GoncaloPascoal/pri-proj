@@ -59,8 +59,7 @@
         },
         {
             "name": "review",
-            "type": "text_en",
-            "required": true
+            "type": "text_en"
         },
         {
             "name": "created",
