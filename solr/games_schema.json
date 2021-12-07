@@ -104,18 +104,21 @@
         },
         {
             "name": "categories",
-            "type": "strings",
-            "required": true
+            "type": "text_name",
+            "required": true,
+            "multiValued": true
         },
         {
             "name": "genres",
-            "type": "strings",
-            "required": true
+            "type": "text_name",
+            "required": true,
+            "multiValued": true
         },
         {
             "name": "steamspy_tags",
-            "type": "strings",
-            "required": true
+            "type": "text_name",
+            "required": true,
+            "multiValued": true
         },
         {
             "name": "achievements",
