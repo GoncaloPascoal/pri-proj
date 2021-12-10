@@ -73,3 +73,6 @@ clean-solr-reviews :
 	docker exec $(cn) bin/solr delete -c reviews
 
 clean-solr : clean-solr-games clean-solr-reviews
+
+query: /usr/bin/python3
+	python3 solr/query.py
