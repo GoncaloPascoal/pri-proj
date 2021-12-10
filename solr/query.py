@@ -123,6 +123,18 @@ queries = [
             }
         }
     },
+    {
+        # Precision @ 5: 100%
+        # Precision @ 10: 100%
+        'query': {
+            'edismax': {
+                'query': 'toxicity playtime_at_review:[3000 TO *]',
+                'q.op': 'AND',
+                'qf': qf_reviews,
+                'boost': boost_reviews,
+            }
+        }
+    },
 ]
 
 cores = ['games', 'reviews']
