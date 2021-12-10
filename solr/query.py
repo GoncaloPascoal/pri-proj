@@ -5,7 +5,7 @@ from pprint import pprint
 
 def print_game(game):
     print(Style.BRIGHT + Fore.CYAN + game['name'] + Fore.LIGHTMAGENTA_EX + ' (' + 
-        + str(game['appid']) + ')' + Style.RESET_ALL)
+        str(game['appid']) + ')' + Style.RESET_ALL)
     print('- Released:', Fore.YELLOW + game['release_date'][:10] + Fore.RESET)
     print('- Genres:', game['genres'])
     print('- Tags:', game['steamspy_tags'])
@@ -98,7 +98,19 @@ queries = [
                 'boost': boost_reviews,
             }
         }
-    }
+    },
+    {
+        # Precision @ 5: 80%
+        # Precision @ 10: 70%
+        'query': {
+            'edismax': {
+                'query': 'retro fps release_date:{2017-01-01T00:00:00Z TO *]',
+                'q.op': 'AND',
+                'qf': qf,
+                'boost': boost,
+            }
+        }
+    },
 ]
 
 cores = ['games', 'reviews']
@@ -118,7 +130,7 @@ while True:
 
 url = f'http://localhost:8983/solr/{core}/query'
 
-response_str = requests.post(url, data=json.dumps(queries[4]), headers={
+response_str = requests.post(url, data=json.dumps(queries[-1]), headers={
     'Content-Type': 'application/json',
 })
 
