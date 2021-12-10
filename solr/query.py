@@ -111,6 +111,18 @@ queries = [
             }
         }
     },
+    {
+        # Precision @ 5: 80%
+        # Precision @ 10: 60%
+        'query': {
+            'edismax': {
+                'query': 'forest platforms:linux',
+                'q.op': 'AND',
+                'qf': qf,
+                'boost': boost,
+            }
+        }
+    },
 ]
 
 cores = ['games', 'reviews']
