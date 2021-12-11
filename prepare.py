@@ -18,7 +18,11 @@ def convert_to_list(df, col):
 def extract_text_from_html(df, col):
     df[col] = df[col].apply(lambda x: BeautifulSoup(x, features='lxml').get_text())
 
+def remove_trademark_symbols(df, col):
+    df[col] = df[col].replace(to_replace='[\u2122\u00AE]', value='', regex=True)
+
 def process_steam_data(df):
+    remove_trademark_symbols(df, 'name')
     df['english'] = df['english'].astype(bool)
     df['release_date'] = pd.to_datetime(df['release_date']).apply(lambda x: x.isoformat())
     df['owners'] = df['owners'].astype('category')
@@ -34,6 +38,7 @@ def process_steam_description_data(df):
     print('- Extracting text from HTML descriptions...')
     for col in ['detailed_description', 'about_the_game', 'short_description']:
         extract_text_from_html(df, col)
+        remove_trademark_symbols(df, col)
 
     return df
 
@@ -78,6 +83,7 @@ def dict_to_json_file(dct, path):
 def calc_weighted_score(row):
     return row['review_score'] - (row['review_score'] - 0.5) * \
         pow(2, -log10(row['total_ratings'] + 1))
+
 
 def main():
     colorama.init()
