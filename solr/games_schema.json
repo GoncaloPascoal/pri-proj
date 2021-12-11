@@ -14,6 +14,13 @@
                     },
                     {
                         "class": "solr.LowercaseFilterFactory"
+                    },
+                    {
+                        "class": "solr.SynonymGraphFilterFactory",
+                        "synonyms": "/var/solr/data/games/synonyms.txt"
+                    },
+                    {
+                        "class": "solr.FlattenGraphFilterFactory"
                     }
                 ]
             },
@@ -28,6 +35,10 @@
                     },
                     {
                         "class": "solr.LowercaseFilterFactory"
+                    },
+                    {
+                        "class": "solr.SynonymGraphFilterFactory",
+                        "synonyms": "/var/solr/data/games/synonyms.txt"
                     }
                 ]
             }

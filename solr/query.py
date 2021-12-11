@@ -4,7 +4,7 @@ from colorama import Style, Fore
 from pprint import pprint
 
 def print_game(game):
-    print(Style.BRIGHT + Fore.CYAN + game['name'] + Fore.LIGHTMAGENTA_EX + ' (' + 
+    print(Style.BRIGHT + Fore.CYAN + game['name'] + Fore.LIGHTMAGENTA_EX + ' (' +
         str(game['appid']) + ')' + Style.RESET_ALL)
     print('- Released:', Fore.YELLOW + game['release_date'][:10] + Fore.RESET)
     print('- Genres:', game['genres'])
@@ -44,7 +44,7 @@ queries = [
     {
         'query': {
             'edismax': {
-                'query': 'story rich rpg turn based combat price:[* TO 20}',
+                'query': 'mgs',
                 'q.op': 'AND',
                 'qf': qf,
                 'boost': boost,
@@ -154,7 +154,7 @@ while True:
 
 url = f'http://localhost:8983/solr/{core}/query'
 
-response_str = requests.post(url, data=json.dumps(queries[-1]), headers={
+response_str = requests.post(url, data=json.dumps(queries[0]), headers={
     'Content-Type': 'application/json',
 })
 

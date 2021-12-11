@@ -49,6 +49,7 @@ analysis :
 solr-games : solr/enums_config.xml solr/games_schema.json data/steam.json
 	docker exec $(cn) bin/solr create_core -c games
 	docker cp solr/enums_config.xml $(cn):/var/solr/data/games/enums_config.xml
+	docker cp solr/synonyms.txt $(cn):/var/solr/data/games/synonyms.txt
 	curl -X POST -H 'Content-Type:application/json' \
 	--data-binary @solr/games_schema.json \
 	http://localhost:8983/solr/games/schema
