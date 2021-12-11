@@ -28,6 +28,11 @@
                     },
                     {
                         "class": "solr.LowercaseFilterFactory"
+                    },
+                    {
+                        "class": "solr.SynonymGraphFilterFactory",
+                        "synonyms": "synonyms.txt",
+                        "ignoreCase": true
                     }
                 ]
             }
