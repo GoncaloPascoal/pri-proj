@@ -1,0 +1,15 @@
+ww1,world war i,the great war
+ww2,world war ii
+xmas,christmas
+gta,grand theft auto
+tes => tes,the elder scrolls
+kof => kof,kingdom of fighters
+kotor => kotor,knights of the old republic
+lotro => lotro,lord of the rings online
+cod => cod,call of duty
+csgo => csgo,counter strike global offensive
+css => css,counter strike source
+l4d => l42,left 4 dead
+l4d2 => l4d2,left 4 dead 2
+mgs => mgs,metal gear solid
+civ => civ,civilization
