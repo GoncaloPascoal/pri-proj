@@ -50,12 +50,14 @@
         {
             "name": "appid",
             "type": "pint",
-            "required": true
+            "required": true,
+            "indexed": false
         },
         {
             "name": "author_steamid",
             "type": "pint",
-            "required": true
+            "required": true,
+            "indexed": false
         },
         {
             "name": "playtime_at_review",

@@ -66,13 +66,13 @@
         {
             "name": "appid",
             "type": "pint",
-            "required": true
+            "required": true,
+            "indexed": false
         },
         {
             "name": "name",
             "type": "text_name",
-            "required": true,
-            "indexed": true
+            "required": true
         },
         {
             "name": "release_date",
@@ -168,8 +168,7 @@
         {
             "name": "price",
             "type": "pfloat",
-            "required": true,
-            "indexed": true
+            "required": true
         },
         {
             "name": "owners",
