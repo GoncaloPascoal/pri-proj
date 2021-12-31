@@ -19,6 +19,9 @@ reviews : /usr/bin/python3
 steam-spy : /usr/bin/python3 data/steam.csv
 	python3 steam_spy.py
 
+wikipedia : /usr/bin/python3 data/steam_updated.csv
+	python3 wikipedia.py
+
 # Fetches information from HowLongToBeat website (regarding the expected
 # length of a game based on user reports)
 hltb : /usr/bin/python3
