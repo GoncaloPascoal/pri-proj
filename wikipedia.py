@@ -16,7 +16,7 @@ def write_data(df, messages=True):
         })
 
         if messages:
-            print(Fore.CYAN + '- Writing updated data to new CSV file...')
+            print(Fore.CYAN + '- Writing raw data to JSON file...')
         
         df.to_json('data/wikipedia_raw.json', orient='records')
 
