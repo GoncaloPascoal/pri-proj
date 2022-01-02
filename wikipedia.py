@@ -62,7 +62,7 @@ def main():
         params = {
             'action': 'query',
             'prop': 'extracts',
-            'exsectionformat': 'plain',
+            'exsectionformat': 'wiki',
             'explaintext': 'true',
             'titles': opt_str,
             'format': 'json',
