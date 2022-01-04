@@ -182,5 +182,30 @@ def main():
 
     print(Fore.GREEN + '\nDone.\n' + Style.RESET_ALL)
 
+    print(Fore.MAGENTA + Style.BRIGHT + '\n--- Flattening Data into a Single Index ---\n')
+    
+    print(Fore.CYAN + '- Reading Games File...')
+    games_file = open('data/steam.json')
+    games = json.load(games_file)
+    games_file.close()
+    
+    print(Fore.CYAN + '- Reading Reviews File...')
+    reviews_file = open('data/reviews.json')
+    reviews = json.load(reviews_file)
+    reviews_file.close()
+
+    print(Fore.CYAN + '- Adding the type...')
+    for game in games:
+        game['type'] = 'game'
+    for review in reviews:
+        review['type'] = 'review'
+    
+    print(Fore.CYAN + '- Writing Games and Reviews File...')
+    file = open('data/games_and_reviews.json', 'w')
+    json.dump(games + reviews, file, separators=(',', ':'))
+    file.close()
+
+    print(Fore.GREEN + '\nDone.\n' + Style.RESET_ALL)
+
 if __name__ == '__main__':
     main()
