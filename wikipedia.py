@@ -87,7 +87,7 @@ def main():
                                 break
                         
                         if rate_limited:
-                            print(Fore.RED + f'Rate limited! Sleeping for {backoff}s'
+                            tqdm.write(Fore.RED + f'Rate limited! Sleeping for {backoff}s'
                                 + Fore.RESET)
                             sleep(backoff)
                             backoff *= 2
@@ -98,9 +98,14 @@ def main():
                         # No errors in response
                         break
                 else:
-                    print(Fore.RED + f'Error: {response.status_code}' + Fore.RESET)
+                    tqdm.write(Fore.RED + f'Error: {response.status_code}' + Fore.RESET)
                     return
             
+            if 'pages' not in jsr['query']:
+                tqdm.write(Fore.RED + f'\nError: request did not return page list')
+                tqdm.write('Titles were: ' + Fore.BLUE + str(params['titles'].split('|')) + Fore.RESET)
+                return
+
             pages = jsr['query']['pages']
             for page in pages:
                 if 'extract' in page:

@@ -24,7 +24,7 @@ wikipedia : /usr/bin/python3 data/steam_updated.csv
 	python3 wikipedia.py
 
 # Process raw Wikipedia article data
-process-wikipedia : /usr/bin/python3 data/wikipedia.json
+process-wikipedia : /usr/bin/python3 data/wikipedia_raw.json
 	python3 process_wikipedia.py
 
 # Fetches information from HowLongToBeat website (regarding the expected
