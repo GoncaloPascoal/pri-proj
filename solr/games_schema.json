@@ -219,6 +219,18 @@
             "name": "protondb_tier",
             "type": "enum_protondb_tier",
             "required": true
+        },
+        {
+            "name": "wp_introduction",
+            "type": "text_en"
+        },
+        {
+            "name": "wp_gameplay",
+            "type": "text_en"
+        },
+        {
+            "name": "wp_synopsis",
+            "type": "text_en"
         }
     ]
 }

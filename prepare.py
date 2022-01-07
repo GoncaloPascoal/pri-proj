@@ -145,6 +145,14 @@ def main():
         'price': float,
     })
 
+    print(Fore.CYAN + '- Reading processed Wikipedia JSON...')
+    wp_df = pd.read_json('data/wikipedia.json', orient='records')
+    convert_types(wp_df, {
+        'appid': int,
+    })
+    
+    data = pd.merge(left=data, right=wp_df, on='appid')
+
     if os.path.exists(STEAM_JSON):
         print(Fore.YELLOW + '- Found existing processed Steam data file, skipping this step...')
     else:
