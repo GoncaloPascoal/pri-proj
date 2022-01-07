@@ -66,17 +66,7 @@ solr-reviews : solr/reviews_schema.json data/reviews.json
 	docker cp data/reviews.json $(cn):/reviews.json
 	docker exec $(cn) bin/post -c reviews /reviews.json
 
-solr-multicore: solr/schema.json data/games_and_reviews.json
-	docker exec $(cn) bin/solr create_core -c games_and_reviews
-	docker cp solr/enums_config.xml $(cn):/var/solr/data/games_and_reviews/enums_config.xml
-	docker cp solr/synonyms.txt $(cn):/var/solr/data/games_and_reviews/conf/synonyms.txt
-	curl -X POST -H 'Content-Type:application/json' \
-	--data-binary @solr/schema.json \
-	http://localhost:8983/solr/games_and_reviews/schema
-	docker cp data/games_and_reviews.json $(cn):/games_and_reviews.json
-	docker exec $(cn) bin/post -c games_and_reviews /games_and_reviews.json
-
-solr : solr-games solr-reviews solr-multicore
+solr : solr-games solr-reviews
 
 clean-solr-games :
 	docker exec $(cn) bin/solr delete -c games
@@ -84,10 +74,7 @@ clean-solr-games :
 clean-solr-reviews : 
 	docker exec $(cn) bin/solr delete -c reviews
 
-clean-solr-multicore :
-	docker exec $(cn) bin/solr delete -c games_and_reviews
-
-clean-solr : clean-solr-games clean-solr-reviews clean-solr-multicore
+clean-solr : clean-solr-games clean-solr-reviews
 
 query: /usr/bin/python3
 	python3 solr/query.py
