@@ -25,7 +25,7 @@ def main():
 
         if article:
             sections = list(map(lambda x: x.strip(), article.split('\n\n== ')))
-            df.loc[i, 'introduction'] = sections[0]
+            df.loc[i, 'wp_introduction'] = sections[0]
 
             sections = dict(map(split_section, sections[1:]))
 
@@ -33,7 +33,7 @@ def main():
             process_body = lambda b: re.sub('=== .* ===', '\n', b).strip()
 
             if 'gameplay' in sections:
-                df.loc[i, 'gameplay'] = process_body(sections['gameplay'])
+                df.loc[i, 'wp_gameplay'] = process_body(sections['gameplay'])
 
             synopsis = None
             if 'synopsis' in sections:
@@ -41,7 +41,7 @@ def main():
             elif 'plot' in sections:
                 synopsis = process_body(sections['plot'])
 
-            df.loc[i, 'synopsis'] = synopsis
+            df.loc[i, 'wp_synopsis'] = synopsis
 
     df.drop('wp_article', axis=1, inplace=True)
 
