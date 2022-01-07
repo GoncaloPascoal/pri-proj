@@ -1,7 +1,7 @@
 # PRI Project
 Repository for the Information Processing and Retrieval project, focused on the development of a search system for Steam games.
 
-## How to run
+## Usage
 
 ```bash
 docker run --name pri -p 8983:8983 solr:8.10
