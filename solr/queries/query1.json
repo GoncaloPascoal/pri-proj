@@ -1,0 +1,13 @@
+{
+    "core": "games",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "story sci-fi rpg price:[* TO 25}",
+                "q.op": "AND",
+                "qf": "name^2.5 genres^4 steamspy_tags^3 about_the_game^1.5 short_description detailed_description^0.8",
+                "boost": null
+            }
+        }
+    }
+}

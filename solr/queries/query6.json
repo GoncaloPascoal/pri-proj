@@ -1,0 +1,14 @@
+{
+    "core": "games",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "fantasy genres:RPG weighted_score:[0.92 TO *]",
+                "q.op": "AND",
+                "qf": null,
+                "boost": null,
+                "rows": 60
+            }
+        }
+    }
+}
