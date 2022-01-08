@@ -3,8 +3,8 @@ import requests, json
 from colorama import Style, Fore
 from pprint import pprint
 
-GAME_RESULT = 1
-REVIEW_RESULT = 2
+GAMES = 'games'
+REVIEWS = 'reviews'
 
 def print_result(result):
     if result['type'] == GAME_RESULT:
@@ -83,44 +83,92 @@ def main():
     boost_reviews = 'vote_score'
 
     query_list = [
-        # (Core, Query)
-        ('games', {
+        # (Query, Core)
+        ( {
             'query': {
                 'edismax': {
-                    'query': 'mgs',
+                    'query': 'story-rich rpg "turn based combat" price:[* TO 20}',
                     'q.op': 'AND',
-                    'qf': qf,
-                    'boost': boost,
+                    'qf': 'name^10 genres^3 steamspy_tags^2 detailed_description',
+                    'boost': 'weighted_score',
                 }
             }
-        },),
-        ('games', {
+        }, GAMES ), # Listing 1
+        ( {
             'query': {
                 'edismax': {
-                    'query': 'strategy army steamspy_tags:Medieval',
+                    'query': 'fighting weighted_score:{0.6 to *]',
                     'q.op': 'AND',
-                    'qf': qf,
-                    'boost': boost,
-                    'rows': 20,
+                    'boost': 'weighted_score', # TODO: check if the query had boost or not
                 }
             }
-        },),
-        ('games', {
-            # Precision @ 5: 100%
-            # Precision @ 10: 80%
+        }, GAMES ), # Table 1
+        ( {
+            'query': {
+                'edismax': {
+                    'query': 'fighting weighted_score:{0.6 to *]',
+                    'q.op': 'AND',
+                    'qf': 'steamspy_tags^2 short_description^1.5 detailed_description',
+                    'boost': 'weighted_score', # TODO: check if the query had boost or not
+                }
+            }
+        }, GAMES ), # Table 2
+        ( {
+           'query': {
+                'edismax': {
+                    'query': 'steamspy_tags:Difficult',
+                    'boost': 'review_score',
+                }
+            } 
+        }, GAMES ), # Table 3
+        ( {
+           'query': {
+                'edismax': {
+                    'query': 'steamspy_tags:Difficult',
+                    'boost': 'mul(review_score, log(total_ratings))',
+                }
+            } 
+        }, GAMES ), # Table 4
+        ( {
+           'query': {
+                'edismax': {
+                    'query': 'steamspy_tags:Difficult',
+                    'boost': 'weighted_score',
+                }
+            } 
+        }, GAMES ), # Table 5
+        ( {
+            'query': {
+                'edismax': {
+                    'query': 'gta',
+                    'q.op': 'AND',
+                    'qf': 'name^10 genres^3 steamspy_tags^2 detailed_description',
+                    'boost': 'weighted_score',
+                }
+            }
+        }, GAMES ), # Listing 6 and 7 # TODO: check
+
+        ( {
+            'query': {
+                'edismax': {
+                    'query': 'story sci-fi rpg combat price:[* TO 25]',
+                    'q.op': 'AND',
+                    'qf': qf_games,
+                    'boost': boost_games,
+                }
+            }
+        }, GAMES ), # Evaluation 1
+        ( {
             'query': {
                 'edismax': {
                     'query': 'historical command army',
                     'q.op': 'AND',
-                    'qf': qf,
-                    'boost': boost,
+                    'qf': qf_games,
+                    'boost': boost_games,
                 }
             }
-        },),
-        ('reviews', {
-            # Precision @ 5: 80%
-            # Precision @ 10: 80%
-            # Interesting find: a lot of games mentioned were VR
+        }, GAMES ), # Evalutation 2
+        ( {
             'query': {
                 'edismax': {
                     'query': 'immersion "good graphics" votes_up:[3 TO *]',
@@ -129,10 +177,8 @@ def main():
                     'boost': boost_reviews,
                 }
             }
-        },),
-        ('reviews', {
-            # Precision @ 5: 80%
-            # Precision @ 10: 80%
+        }, REVIEWS ), # Evaluation 3
+        ( {
             'query': {
                 'edismax': {
                     'query': 'survival zombies votes_funny:[5 TO *]',
@@ -141,34 +187,29 @@ def main():
                     'boost': boost_reviews,
                 }
             }
-        },),
-        ('games', {
-            # Precision @ 5: 80%
-            # Precision @ 10: 70%
+        }, REVIEWS ), # Evaluation 4
+        ( {
             'query': {
                 'edismax': {
-                    'query': 'retro fps release_date:{2017-01-01T00:00:00Z TO *]',
+                    'query': 'strategy army steamspy_tags:Medieval',
                     'q.op': 'AND',
-                    'qf': qf,
-                    'boost': boost,
+                    'qf': qf_games,
+                    'boost': boost_games,
+                    'rows': 20,
                 }
             }
-        },),
-        ('games', {
-            # Precision @ 5: 80%
-            # Precision @ 10: 60%
+        }, GAMES ), # Evaluation 5
+        ( {
             'query': {
                 'edismax': {
-                    'query': 'forest platforms:linux',
+                    'query': 'fantasy genres:RPG weighted_score:[0.92 TO *]',
                     'q.op': 'AND',
-                    'qf': qf,
-                    'boost': boost,
+                    'qf': qf_games,
+                    'boost': boost_games,
                 }
             }
-        },),
-        ('reviews', {
-            # Precision @ 5: 100%
-            # Precision @ 10: 100%
+        }, GAMES ), # Evaluation 6
+    ]
             'query': {
                 'edismax': {
                     'query': 'toxicity playtime_at_review:[3000 TO *]',
