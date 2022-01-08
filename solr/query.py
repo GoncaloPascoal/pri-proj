@@ -98,3 +98,22 @@ for doc in documents:
         print_review(doc)
 
 print('Found', response['response']['numFound'], 'documents.\n')
+
+print('[b]Enter result indices to perform [blue]MoreLikeThis[/blue] query[/b]')
+while True:
+    indices = input('> ').split()
+
+    try:
+        indices = list(map(int, indices))
+        invalid = list(filter(lambda x: x < 0 or x >= len(documents), indices))
+
+        if invalid:
+            print(f'[b red]Invalid indices:[/b red] {invalid}')
+        else:
+            break
+    except ValueError:
+        print('[b red]Indices must be integers![/b red]')
+
+if indices:
+    # TODO: Perform MLT query
+    pass
