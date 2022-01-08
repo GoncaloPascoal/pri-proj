@@ -72,12 +72,35 @@ def query(q, core):
     n_found = response['response']['numFound']
     return (n_found, documents)
 
-def multicore_query(q):
+def multicore_query(q_str):
     '''
     Returns (n_found, document_tuples) where document_tuples is a list of tuples: (solr_document, origin_core)
     '''
-    (n_found_games  ,  games_results) = query(q, 'games'  )
-    (n_found_reviews, review_results) = query(q, 'reviews')
+    q_games = {
+        'query': {
+            'edismax': {
+                'query': q_str,
+                'q.op': 'AND',
+                'qf': 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
+                        about_the_game^1.5 short_description detailed_description^0.8',
+                'boost': 'mul(weighted_score, sqrt(log(total_ratings)))',
+                'fl': '*, score',
+            }
+        }
+    }
+    q_reviews = {
+        'query': {
+            'edismax': {
+                'query': q_str,
+                'q.op': 'AND',
+                'qf': 'review^4 steamspy_tags^2 developer name',
+                'boost': 'vote_score',
+                'fl': '*, score',
+            }
+        }
+    }
+    (n_found_games  ,  games_results) = query(q_games  , 'games'  )
+    (n_found_reviews, review_results) = query(q_reviews, 'reviews')
     
     n_found = n_found_games + n_found_reviews
 
