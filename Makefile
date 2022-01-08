@@ -86,3 +86,6 @@ clean-solr : clean-solr-games clean-solr-reviews
 
 query: /usr/bin/python3
 	python3 solr/query.py
+
+multiquery: /usr/bin/python3
+	python3 solr/multicore_query.py
