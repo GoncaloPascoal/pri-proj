@@ -1,5 +1,6 @@
 
 import requests, json
+from argparse import ArgumentParser
 from colorama import Style, Fore
 from pprint import pprint
 
@@ -259,29 +260,39 @@ def single_query():
     for doc in documents:
         print_result(doc, solr_core)
 
-def double_query():
-    query_list = [
-        {
-            'query': {
-                'edismax': {
-                    'query': 'msgs',
-                    'q.op': 'AND',
-                    'qf': '', # TODO
-                    'boost': '', # TODO
-                    'fl': '*, score',
+def double_query(q=None):
+    if not q:
+        query_list = [
+            {
+                'query': {
+                    'edismax': {
+                        'query': 'msgs',
+                        'q.op': 'AND',
+                        'qf': '', # TODO
+                        'boost': '', # TODO
+                        'fl': '*, score',
+                    }
                 }
-            }
-        }, # Multicore Query 1: msgs
-    ]
+            }, # Multicore Query 1: msgs
+        ]
 
-    q = select_int(0, len(query_list) - 1)
-    (n_found, documents) = multicore_query(query_list[q])
+        q = select_int(0, len(query_list) - 1)
+        q = query_list[q]
+    
+    (n_found, documents) = multicore_query(q)
     
     print(f'Found {n_found} documents.\n')
     for doc, doc_type in documents:
         print_result(doc, doc_type)
 
 def main():
+    parser = ArgumentParser()
+    parser.add_argument('query', nargs='?', help='query')
+    args = parser.parse_args()
+    if args.query:
+        double_query(args.query)
+        return 0
+
     print('[1] Single Core Query')
     print('[2] Multi Core Query')
     menu = select_int(1, 2)
@@ -289,6 +300,7 @@ def main():
         single_query()
     elif menu == 2:
         double_query()
+    return 0
 
 if __name__ == '__main__':
     main()
