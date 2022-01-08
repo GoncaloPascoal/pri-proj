@@ -6,10 +6,10 @@ from pprint import pprint
 GAMES = 'games'
 REVIEWS = 'reviews'
 
-def print_result(result):
-    if result['type'] == GAME_RESULT:
+def print_result(result, result_type):
+    if result_type == GAME_RESULT:
         print_game(result)
-    elif result['type'] == REVIEW_RESULT:
+    elif result_type == REVIEW_RESULT:
         print_review(result)
 
 def print_game(game):
@@ -43,16 +43,20 @@ def print_review(review):
     print('\n' + '\u2500' * 80 + '\n')
 
 def select_int(min_int, max_int):
+    print(f'Select an integer in the interval: [{min_int}-{max_int}]')
     while True:
         try:
-            index = int(input('> '))
+            index = int(input(' -> '))
             if min_int <= index <= max_int:
                 return index
             print(Fore.RED + 'Out of range' + Fore.RESET)
         except ValueError:
             print(Fore.RED + 'Not an integer' + Fore.RESET)
 
-def query(core, q):
+def query(q, core):
+    '''
+    Returns (n_found, documents), where documents are the solr_documents
+    '''
     url = f'http://localhost:8983/solr/{core}/query'
 
     response_str = requests.post(url, data=json.dumps(q), headers={
@@ -69,15 +73,18 @@ def query(core, q):
     return (n_found, documents)
 
 def multicore_query(q):
-    game_results = query('games', q)
-    review_results = query('reviews', q)
+    '''
+    Returns (n_found, document_tuples) where document_tuples is a list of tuples: (solr_document, origin_core)
+    '''
+    game_results   = query(q, 'games'  )
+    review_results = query(q, 'reviews')
     # TODO
-    return # TODO
+    return (0, [])# TODO
 
-def main():
-    qf = 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
-        about_the_game^1.5 short_description detailed_description^0.8'
-    boost = 'mul(weighted_score, sqrt(log(total_ratings)))'
+def single_query():
+    qf_games = 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
+                about_the_game^1.5 short_description detailed_description^0.8'
+    boost_games = 'mul(weighted_score, sqrt(log(total_ratings)))'
 
     qf_reviews = 'review^4 steamspy_tags^2 developer name'
     boost_reviews = 'vote_score'
@@ -210,24 +217,45 @@ def main():
             }
         }, GAMES ), # Evaluation 6
     ]
-            'query': {
-                'edismax': {
-                    'query': 'toxicity playtime_at_review:[3000 TO *]',
-                    'q.op': 'AND',
-                    'qf': qf_reviews,
-                    'boost': boost_reviews,
-                }
-            }
-        },),
-    ]
 
     q = select_int(0, len(query_list) - 1)
-    (n_found, documents) = query(query_list[q][0], query_list[q][1])
-    
+    (solr_query, solr_core) = query_list[q]
+    (n_found, documents) = query(solr_query, solr_core)
     
     print(f'Found {n_found} documents.\n')
     for doc in documents:
-        print_result(doc)
+        print_result(doc, solr_core)
+
+def double_query():
+    query_list = [
+        {
+            'query': {
+                'edismax': {
+                    'query': 'msgs',
+                    'q.op': 'AND',
+                    'qf': '', # TODO
+                    'boost': '', # TODO
+                    'fl': '*, score',
+                }
+            }
+        }, # Multicore Query 1: msgs
+    ]
+
+    q = select_int(0, len(query_list) - 1)
+    (n_found, documents) = multicore_query(query_list[q])
+    
+    print(f'Found {n_found} documents.\n')
+    for doc, doc_type in documents:
+        print_result(doc, doc_type)
+
+def main():
+    print('[1] Single Core Query')
+    print('[2] Multi Core Query')
+    menu = select_int(1, 2)
+    if menu == 1:
+        single_query()
+    elif menu == 2:
+        double_query()
 
 if __name__ == '__main__':
     main()
