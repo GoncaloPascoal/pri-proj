@@ -7,9 +7,9 @@ GAMES = 'games'
 REVIEWS = 'reviews'
 
 def print_result(result, result_type):
-    if result_type == GAME_RESULT:
+    if result_type == GAMES:
         print_game(result)
-    elif result_type == REVIEW_RESULT:
+    elif result_type == REVIEWS:
         print_review(result)
 
 def print_game(game):
@@ -76,10 +76,20 @@ def multicore_query(q):
     '''
     Returns (n_found, document_tuples) where document_tuples is a list of tuples: (solr_document, origin_core)
     '''
-    game_results   = query(q, 'games'  )
-    review_results = query(q, 'reviews')
-    # TODO
-    return (0, [])# TODO
+    (n_found_games  ,  games_results) = query(q, 'games'  )
+    (n_found_reviews, review_results) = query(q, 'reviews')
+    
+    n_found = n_found_games + n_found_reviews
+
+    result_tuples = []
+    # TODO: between
+    for game_doc in games_results:
+        result_tuples.append((game_doc, GAMES))
+    for review_doc in review_results:
+        result_tuples.append((review_doc, REVIEWS))
+    # TODO: between
+
+    return (n_found, result_tuples)
 
 def single_query():
     qf_games = 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
