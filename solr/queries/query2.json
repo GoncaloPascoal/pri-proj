@@ -1,0 +1,13 @@
+{
+    "core": "games",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "historical command army",
+                "q.op": "AND",
+                "qf": null,
+                "boost": null
+            }
+        }
+    }
+}

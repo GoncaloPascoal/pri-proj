@@ -1,0 +1,14 @@
+{
+    "core": "games",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "strategy army steamspy_tags:Medieval",
+                "q.op": "AND",
+                "qf": null,
+                "boost": null,
+                "rows": 60
+            }
+        }
+    }
+}

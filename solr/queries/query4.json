@@ -1,0 +1,13 @@
+{
+    "core": "reviews",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "survival zombies votes_funny:[6 TO *]",
+                "q.op": "AND",
+                "qf": null,
+                "boost": null
+            }
+        }
+    }
+}
