@@ -1,8 +1,8 @@
 
 import requests, json
 from argparse import ArgumentParser
-from colorama import Style, Fore
-from pprint import pprint
+from rich import print
+from rich.pretty import pprint
 
 GAMES = 'games'
 REVIEWS = 'reviews'
@@ -13,34 +13,47 @@ def print_result(result, result_type):
     elif result_type == REVIEWS:
         print_review(result)
 
+def print_game_name(game):
+    name = game['name']
+    appid = game['appid']
+
+    print(f'[b][bright_cyan]{name}[/bright_cyan] [magenta]({appid})[/magenta][/b]')
+
 def print_game(game):
-    print(Style.BRIGHT + Fore.CYAN + game['name'] + Fore.LIGHTMAGENTA_EX + ' (' +
-        str(game['appid']) + ')' + Style.RESET_ALL)
-    print('- Released:', Fore.YELLOW + game['release_date'][:10] + Fore.RESET)
-    print('- Genres:', game['genres'])
-    print('- Tags:', game['steamspy_tags'])
-    print('- Price: {}'.format(Fore.GREEN + '$' + str(game['price']) + Fore.RESET))
-    print()
+    print_game_name(game)
+
+    release_date = game['release_date'][:10]
+    genres = game['genres']
+    tags = game['steamspy_tags']
+    price = game['price']
+
+    print(f'- Released: [b][yellow]{release_date}[/yellow][/b]')
+    print(f'- Genres: {genres}')
+    print(f'- Tags: {tags}')
+    print(f'- Price: [b][green]${price}[/green][/b]\n')
 
 def print_review(review):
-    print(Style.BRIGHT + Fore.BLUE + review['name'], end=' ')
+    name = review["name"]
+    appid = review["appid"]
+
+    print(f'[b][blue]{name}[/blue] [magenta]({appid})[/magenta][/b]', end=' ')
 
     if review['recommended']:
-        print('\u2705', end='')
+        print(':white_check_mark:', end=' ')
     else:
-        print('\u274c', end='')
+        print(':cross_mark:', end=' ')
 
     up = review['votes_up']
     funny = review['votes_funny']
     score = round(review['vote_score'], 3)
 
-    print(f'{Fore.RESET} | {up} \U0001F44D ({score}) | {funny} \U0001f602 ')
+    print(f' | {up} :thumbsup: ({score}) | {funny} :joy:')
 
     hours_at_review = round(review['playtime_at_review'] / 60, 1)
-    print(Fore.LIGHTYELLOW_EX + str(hours_at_review) + ' hours at review')
-    print(Fore.RESET + str(review['steamspy_tags']) + Style.RESET_ALL + '\n')
+    print(f'[bright_yellow]{hours_at_review} hours at review[/bright_yellow]')
+    print(str(review['steamspy_tags']) + '\n')
 
-    pprint(review['review'])
+    pprint(review['review'], max_string=500)
     print('\n' + '\u2500' * 80 + '\n')
 
 def select_int(min_int, max_int):
