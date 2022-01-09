@@ -1,6 +1,6 @@
 
 DEPENDENCIES = pandas seaborn beautifulsoup4 lxml steamreviews colorama \
-howlongtobeatpy requests requests_futures tqdm
+howlongtobeatpy requests requests_futures tqdm rich
 
 all : install-dependencies reviews hltb proton-db steam-spy prepare
 
@@ -61,6 +61,9 @@ solr-games : solr/enums_config.xml solr/games_schema.json data/steam.json
 	curl -X POST -H 'Content-Type:application/json' \
 	--data-binary @solr/games_schema.json \
 	http://localhost:8983/solr/games/schema
+	curl -X POST -H 'Content-Type:application/json' \
+	--data-binary @solr/games_config.json \
+	http://localhost:8983/solr/games/config
 	docker cp data/steam.json $(cn):/steam.json
 	docker exec $(cn) bin/post -c games /steam.json
 
@@ -71,6 +74,9 @@ solr-reviews : solr/reviews_schema.json data/reviews.json
 	curl -X POST -H 'Content-Type:application/json' \
 	--data-binary @solr/reviews_schema.json \
 	http://localhost:8983/solr/reviews/schema
+	curl -X POST -H 'Content-Type:application/json' \
+	--data-binary @solr/reviews_config.json \
+	http://localhost:8983/solr/reviews/config
 	docker cp data/reviews.json $(cn):/reviews.json
 	docker exec $(cn) bin/post -c reviews /reviews.json
 
