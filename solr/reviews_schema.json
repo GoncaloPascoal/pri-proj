@@ -1,11 +1,4 @@
 {
-    "add-requesthandler": {
-        "name": "/mlt",
-        "class": "solr.MoreLikeThisHandler",
-        "defaults": {
-            "mlt.fl": "name,steamspy_tags,review"
-        }
-    },
     "add-field-type": [
         {
             "name": "text_name",
