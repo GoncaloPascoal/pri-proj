@@ -1,7 +1,18 @@
 
 import requests, json
+from os.path import exists as file_exists
+from argparse import ArgumentParser
 from rich import print
 from rich.pretty import pprint
+
+GAMES = 'games'
+REVIEWS = 'reviews'
+
+def print_result(result, result_type):
+    if result_type == GAMES:
+        print_game(result)
+    elif result_type == REVIEWS:
+        print_review(result)
 
 def print_game_name(game):
     name = game['name']
@@ -46,74 +57,104 @@ def print_review(review):
     pprint(review['review'], max_string=500)
     print('\n' + '\u2500' * 80 + '\n')
 
-default_qf = {
-    'games': 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
-    about_the_game^1.5 short_description detailed_description^0.8',
-    'reviews': 'review^4 steamspy_tags^2 developer name'
-}
+def query(q, core):
+    '''
+    Returns (n_found, documents), where documents are the solr_documents
+    '''
+    url = f'http://localhost:8983/solr/{core}/query'
 
-default_boost = {
-    'games': 'mul(weighted_score, sqrt(log(total_ratings)))',
-    'reviews': 'vote_score'
-}
+    response_str = requests.post(url, data=json.dumps(q), headers={
+        'Content-Type': 'application/json',
+    })
 
-print('[b]Enter the path to a JSON query file[/b]')
-while True:
-    try:
-        path = input('> ')
-        fp = open(path, 'r')
-        obj = json.load(fp)
-        break
-    except FileNotFoundError:
-        print('[b][red]File not found[/red][b]')
-    except json.decoder.JSONDecodeError:
-        print('[b][red]Error when parsing JSON[/red][b]')
+    if response_str.status_code != 200:
+        print(response_str.text)
+        exit(1)
 
-core = obj['core']
-query = obj['request']
+    response = json.loads(response_str.text)
+    documents = response['response']['docs']
+    n_found = response['response']['numFound']
+    return (n_found, documents)
 
-if not query['query']['edismax']['qf']:
-    query['query']['edismax']['qf'] = default_qf[core]
+def fill(request, core):
+    default_qf = {
+        GAMES: 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
+        about_the_game^1.5 short_description detailed_description^0.8',
+        REVIEWS: 'review^4 steamspy_tags^2 developer name'
+    }
 
-if not query['query']['edismax']['boost']:
-    query['query']['edismax']['boost'] = default_boost[core]
+    default_boost = {
+        GAMES: 'mul(weighted_score, sqrt(log(total_ratings)))',
+        REVIEWS: 'vote_score'
+    }
 
-url = f'http://localhost:8983/solr/{core}/query'
+    if not request['query']['edismax']['qf']:
+        request['query']['edismax']['qf'] = default_qf[core]
 
-response_str = requests.post(url, data=json.dumps(query), headers={
-    'Content-Type': 'application/json',
-})
+    if not request['query']['edismax']['boost']:
+        request['query']['edismax']['boost'] = default_boost[core]
 
-if response_str.status_code != 200:
-    print(response_str.text)
-    exit(1)
+def single_core_query(obj):
+    global default_qf, default_boost
 
-response = json.loads(response_str.text)
-documents = response['response']['docs']
+    core = obj['core']
+    q    = obj['request']
 
-for doc in documents:
-    if core == 'games':
-        print_game(doc)
-    else:
-        print_review(doc)
+    fill(q, core)
+    
+    (n_found, results) = query(q, core)
+    return (n_found, [(result, core) for result in results])
 
-print('Found', response['response']['numFound'], 'documents.\n')
+def multi_core_query(obj):
+    global default_qf, default_boost
 
-print('[b]Enter result indices to perform [blue]MoreLikeThis[/blue] query[/b]')
-while True:
-    indices = input('> ').split()
+    q = obj['q']
+    q_games   = obj['request_games'  ]
+    q_reviews = obj['request_reviews']
+    q_games  ['query']['edismax']['query'] = q
+    q_reviews['query']['edismax']['query'] = q
+    
+    fill(q_games  , GAMES  )
+    fill(q_reviews, REVIEWS)
 
-    try:
-        indices = list(map(int, indices))
-        invalid = list(filter(lambda x: x < 0 or x >= len(documents), indices))
+    (n_found_games  ,  games_results) = query(q_games  , GAMES  )
+    (n_found_reviews, review_results) = query(q_reviews, REVIEWS)
+    
+    n_found = n_found_games + n_found_reviews
 
-        if invalid:
-            print(f'[b red]Invalid indices:[/b red] {invalid}')
+    result_tuples = []
+    # TODO: between
+    for game_doc in games_results:
+        result_tuples.append((game_doc, GAMES))
+    for review_doc in review_results:
+        result_tuples.append((review_doc, REVIEWS))
+    # TODO: between
+
+    return (n_found, result_tuples)
+
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('query_file', help='name of the query\'s file, without the extension (on the solr/queries folder)')
+    args = parser.parse_args()
+
+    file_name = f'solr/queries/{args.query_file}.json'
+    if file_exists(file_name):
+        file = open(file_name)
+        query_json = json.load(file)
+        file.close()
+
+        # (n_found, results) = (0, [])
+        if query_json['core'] == None:
+            (n_found, results) = multi_core_query(query_json)
         else:
-            break
-    except ValueError:
-        print('[b red]Indices must be integers![/b red]')
+            (n_found, results) = single_core_query(query_json)
 
-if indices:
-    # TODO: Perform MLT query
-    pass
+        print(f'[b][green]Found {n_found} documents.[/green][/b]\n')
+        for result, result_type in results:
+            print_result(result, result_type)
+
+    else:
+        print('[b][red]Invalid File[/red][/b]')
+
+if __name__ == '__main__':
+    main()
