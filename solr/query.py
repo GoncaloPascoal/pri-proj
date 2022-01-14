@@ -129,7 +129,9 @@ def multi_core_query(obj):
     q_reviews = obj['request_reviews']
     q_games  ['query']['edismax']['query'] = q
     q_reviews['query']['edismax']['query'] = q
-
+    q_games  ['params'] = {'fl': '*, score'}
+    q_reviews['params'] = {'fl': '*, score'}
+    
     fill(q_games  , GAMES  )
     fill(q_reviews, REVIEWS)
 
