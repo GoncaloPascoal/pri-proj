@@ -155,20 +155,34 @@ def main():
         else:
             (n_found, results) = single_core_query(query_json)
 
-        print(f'[b][green]Found {n_found} documents.[/green][/b]\n')
+        print(f'[b green]Found {n_found} documents.[/b green]\n')
         for result, result_type in results:
             print_result(result, result_type)
 
     else:
-        print('[b][red]Invalid File[/red][/b]')
+        print('[b red]Invalid File[/b red]')
+    print('[b]Enter result indices to perform [blue]MoreLikeThis[/blue] query[/b]')
     
+    while True:
+        indices = input('> ').split()
+
+        try:
+            indices = list(map(int, indices))
+            invalid = list(filter(lambda x: x < 0 or x >= len(results), indices))
+
+            if invalid:
+                print(f'[b red]Invalid indices:[/b red] {invalid}')
+            else:
+                break
+        except ValueError:
+            print('[b red]Indices must be integers![/b red]')
     if len(indices) > 0:
         # TODO: Perform MLT query
         appids = []
         for idx in indices:
-            appids.append(documents[idx]['appid'])
+            appids.append(results[0][idx]['appid'])
 
-        url = f'http://localhost:8983/solr/{core}/mlt'
+        #url = f'http://localhost:8983/solr/{core}/mlt'
         
-        response_str = requests.get()
+        #response_str = requests.get()
     
