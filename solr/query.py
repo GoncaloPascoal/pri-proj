@@ -140,29 +140,36 @@ def multi_core_query(obj):
     
     n_found = n_found_games + n_found_reviews
 
+    get_score = lambda x: x['score']
+    scores_games = map(get_score, games_results)
+    scores_reviews = map(get_score, review_results)
+
+    min_games, max_games = min(scores_games), max(scores_games)
+    min_reviews, max_reviews = min(scores_reviews), max(scores_reviews)
+
+    def normalize_document_scores(results, s_min, s_max):
+        return list(map(lambda x: (x['score'] - s_min) / (s_max - s_min), results))
+
     def lms(l, l_total):
         return log10(1 + l * 600 / l_total)
 
-    def weight(s, s_avg):
-        return 1 + 2 * (s - s_avg) / s_avg
+    def weighted_document_score(d, c):
+        return (d + 0.4 * d * c) / 1.4
 
     lms_games = lms(n_found_games, n_found)
     lms_reviews = lms(n_found_reviews, n_found)
-    
-    lms_avg = (lms_games + lms_reviews) / 2
 
-    weight_games = weight(lms_games, lms_avg)
-    weight_reviews = weight(lms_reviews, lms_avg)
+    games_results = normalize_document_scores(games_results, min_games, max_games)
+    review_results = normalize_document_scores(review_results, min_reviews, max_reviews)
 
     print(n_found_games, n_found_reviews)
     print(lms_games, lms_reviews)
-    print(weight_games, weight_reviews)
 
     for result in games_results:
-        result['score'] *= weight_games
+        result['score'] = weighted_document_score(result['score'], lms_games)
 
     for result in review_results:
-        result['score'] *= weight_reviews
+        result['score'] = weighted_document_score(result['score'], lms_reviews)
 
     result_tuples = []
     result_tuples += map(lambda x: (x, GAMES), games_results)
