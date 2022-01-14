@@ -87,12 +87,14 @@ def fill(request, core):
         GAMES: 'mul(weighted_score, sqrt(log(total_ratings)))',
         REVIEWS: 'vote_score'
     }
+    
+    edismax = request['query']['edismax']
+    if 'qf' in edismax and not edismax['qf']:
+        edismax['qf'] = default_qf[core]
 
-    if not request['query']['edismax']['qf']:
-        request['query']['edismax']['qf'] = default_qf[core]
+    if 'boost' in edismax and not edismax['boost']:
+        edismax['boost'] = default_boost[core]
 
-    if not request['query']['edismax']['boost']:
-        request['query']['edismax']['boost'] = default_boost[core]
 
 def single_core_query(obj):
     global default_qf, default_boost
