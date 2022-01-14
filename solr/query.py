@@ -63,8 +63,9 @@ def query(q, core, mlt=False):
     '''
     if mlt:
         url = f'http://localhost:8983/solr/{core}/mlt'
-        response_str = requests.get(url, data=json.dumps(q), headers={
-            'Content-Type': 'application/json',
+        response_str = requests.get(url, params={
+            'q.op': 'OR',
+            'q': ' '.join(q),
         })
     else:
         url = f'http://localhost:8983/solr/{core}/query'
@@ -147,23 +148,26 @@ def main():
     if not file_exists(file_name):
         print('[b red]Invalid File[/b red]')
         return 0
-
+    print(file_name)
     file = open(file_name)
     query_json = json.load(file)
     file.close()
 
-    # (n_found, results) = (0, [])
     if query_json['core'] == None:
         (n_found, results) = multi_core_query(query_json)
+        multicore = True
     else:
         (n_found, results) = single_core_query(query_json)
+        multicore = False
 
     print(f'[b green]Found {n_found} documents.[/b green]\n')
     for result, result_type in results:
         print_result(result, result_type)
 
+    if multicore:
+        return
+
     print('[b]Enter result indices to perform [blue]MoreLikeThis[/blue] query[/b]')
-    
     while True:
         indices = input('> ').split()
 
@@ -178,3 +182,16 @@ def main():
         except ValueError:
             print('[b red]Indices must be integers![/b red]')
 
+    if indices:
+        appids = []
+        for idx in indices:
+            appids.append('appid:' + str(results[idx][0]['appid']))
+
+        (n_found, results) = query(appids, query_json['core'], True)
+        print(f'[b green]Found {n_found} documents.[/b green]\n')
+        for result in results:
+            print_result(result, query_json['core'])
+
+
+if __name__ == '__main__':
+    main()
