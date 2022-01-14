@@ -161,6 +161,14 @@ def main():
 
     else:
         print('[b][red]Invalid File[/red][/b]')
+    
+    if len(indices) > 0:
+        # TODO: Perform MLT query
+        appids = []
+        for idx in indices:
+            appids.append(documents[idx]['appid'])
 
-if __name__ == '__main__':
-    main()
+        url = f'http://localhost:8983/solr/{core}/mlt'
+        
+        response_str = requests.get()
+    
