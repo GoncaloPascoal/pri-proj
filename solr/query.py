@@ -116,4 +116,10 @@ while True:
 
 if indices:
     # TODO: Perform MLT query
-    pass
+    appids = []
+    for idx in indices:
+        appids.append(documents[idx]['appid'])
+
+    url = f'http://localhost:8983/solr/{core}/mlt'
+    
+    response_str = requests.get()
