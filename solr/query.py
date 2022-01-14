@@ -141,14 +141,15 @@ def multi_core_query(obj):
     n_found = n_found_games + n_found_reviews
 
     get_score = lambda x: x['score']
-    scores_games = map(get_score, games_results)
-    scores_reviews = map(get_score, review_results)
+    scores_games = list(map(get_score, games_results))
+    scores_reviews = list(map(get_score, review_results))
 
     min_games, max_games = min(scores_games), max(scores_games)
     min_reviews, max_reviews = min(scores_reviews), max(scores_reviews)
 
     def normalize_document_scores(results, s_min, s_max):
-        return list(map(lambda x: (x['score'] - s_min) / (s_max - s_min), results))
+        for result in results:
+            result['score'] = (result['score'] - s_min) / (s_max - s_min)
 
     def lms(l, l_total):
         return log10(1 + l * 600 / l_total)
@@ -159,8 +160,8 @@ def multi_core_query(obj):
     lms_games = lms(n_found_games, n_found)
     lms_reviews = lms(n_found_reviews, n_found)
 
-    games_results = normalize_document_scores(games_results, min_games, max_games)
-    review_results = normalize_document_scores(review_results, min_reviews, max_reviews)
+    normalize_document_scores(games_results, min_games, max_games)
+    normalize_document_scores(review_results, min_reviews, max_reviews)
 
     print(n_found_games, n_found_reviews)
     print(lms_games, lms_reviews)
