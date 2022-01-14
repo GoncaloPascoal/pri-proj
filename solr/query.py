@@ -85,7 +85,8 @@ def query(q, core, mlt=False):
 def fill(request, core):
     default_qf = {
         GAMES: 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
-        about_the_game^1.5 short_description detailed_description^0.8',
+                about_the_game^1.5 short_description detailed_description^0.8 \
+                wp_gameplay^1 wp_introduction^1.5 wp_synopsis^2',
         REVIEWS: 'review^4 steamspy_tags^2 developer name'
     }
 
@@ -102,10 +103,10 @@ def fill(request, core):
         edismax['boost'] = default_boost[core]
 
 def single_core_query(obj):
-    global default_qf, default_boost
-
     core = obj['core']
     q    = obj['request']
+    q_str = q['query']['edismax']['query']
+    print(f'[b yellow]{q_str}[/b yellow]')
 
     fill(q, core)
     
@@ -113,9 +114,8 @@ def single_core_query(obj):
     return (n_found, [(result, core) for result in results])
 
 def multi_core_query(obj):
-    global default_qf, default_boost
-
     q = obj['q']
+    print(f'[b yellow]{q}[/b yellow]')
     q_games   = obj['request_games'  ]
     q_reviews = obj['request_reviews']
     q_games  ['query']['edismax']['query'] = q
@@ -148,17 +148,18 @@ def main():
     if not file_exists(file_name):
         print('[b red]Invalid File[/b red]')
         return 0
-    print(file_name)
+
+    print()
     file = open(file_name)
     query_json = json.load(file)
     file.close()
 
-    if query_json['core'] == None:
+    multicore = query_json['core'] == None
+
+    if multicore:
         (n_found, results) = multi_core_query(query_json)
-        multicore = True
     else:
         (n_found, results) = single_core_query(query_json)
-        multicore = False
 
     print(f'[b green]Found {n_found} documents.[/b green]\n')
     for result, result_type in results:
