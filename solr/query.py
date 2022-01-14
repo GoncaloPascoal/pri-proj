@@ -57,15 +57,20 @@ def print_review(review):
     pprint(review['review'], max_string=500)
     print('\n' + '\u2500' * 80 + '\n')
 
-def query(q, core):
+def query(q, core, mlt=False):
     '''
     Returns (n_found, documents), where documents are the solr_documents
     '''
-    url = f'http://localhost:8983/solr/{core}/query'
-
-    response_str = requests.post(url, data=json.dumps(q), headers={
-        'Content-Type': 'application/json',
-    })
+    if mlt:
+        url = f'http://localhost:8983/solr/{core}/mlt'
+        response_str = requests.get(url, data=json.dumps(q), headers={
+            'Content-Type': 'application/json',
+        })
+    else:
+        url = f'http://localhost:8983/solr/{core}/query'
+        response_str = requests.post(url, data=json.dumps(q), headers={
+            'Content-Type': 'application/json',
+        })
 
     if response_str.status_code != 200:
         print(response_str.text)
@@ -94,7 +99,6 @@ def fill(request, core):
 
     if 'boost' in edismax and not edismax['boost']:
         edismax['boost'] = default_boost[core]
-
 
 def single_core_query(obj):
     global default_qf, default_boost
