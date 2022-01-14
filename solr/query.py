@@ -4,6 +4,7 @@ from os.path import exists as file_exists
 from argparse import ArgumentParser
 from rich import print
 from rich.pretty import pprint
+from math import log10
 
 GAMES = 'games'
 REVIEWS = 'reviews'
@@ -15,10 +16,14 @@ def print_result(result, result_type):
         print_review(result)
 
 def print_game_name(game):
+    score = ''
+    if 'score' in game:
+        score = str(round(game['score'], 2)) + ' '
+
     name = game['name']
     appid = game['appid']
 
-    print(f'[b][bright_cyan]{name}[/bright_cyan] [magenta]({appid})[/magenta][/b]')
+    print(f'[b]{score}[blue]{name}[/blue] [magenta]({appid})[/magenta][/b]')
 
 def print_game(game):
     print_game_name(game)
@@ -34,10 +39,14 @@ def print_game(game):
     print(f'- Price: [b][green]${price}[/green][/b]\n')
 
 def print_review(review):
+    score = ''
+    if 'score' in review:
+        score = str(round(review['score'], 2)) + ' '
+
     name = review["name"]
     appid = review["appid"]
 
-    print(f'[b][blue]{name}[/blue] [magenta]({appid})[/magenta][/b]', end=' ')
+    print(f'[b]{score}[blue]{name}[/blue] [magenta]({appid})[/magenta][/b]', end=' ')
 
     if review['recommended']:
         print(':white_check_mark:', end=' ')
@@ -84,9 +93,9 @@ def query(q, core, mlt=False):
 
 def fill(request, core):
     default_qf = {
-        GAMES: 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 \
-                about_the_game^1.5 short_description detailed_description^0.8 \
-                wp_gameplay^1 wp_introduction^1.5 wp_synopsis^2',
+        GAMES: 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 '
+                'about_the_game^1.5 short_description detailed_description^0.8 '
+                'wp_gameplay^1 wp_introduction^1.5 wp_synopsis^2',
         REVIEWS: 'review^4 steamspy_tags^2 developer name'
     }
 
@@ -120,7 +129,7 @@ def multi_core_query(obj):
     q_reviews = obj['request_reviews']
     q_games  ['query']['edismax']['query'] = q
     q_reviews['query']['edismax']['query'] = q
-    
+
     fill(q_games  , GAMES  )
     fill(q_reviews, REVIEWS)
 
@@ -129,13 +138,35 @@ def multi_core_query(obj):
     
     n_found = n_found_games + n_found_reviews
 
+    def lms(l, l_total):
+        return log10(1 + l * 600 / l_total)
+
+    def weight(s, s_avg):
+        return 1 + 2 * (s - s_avg) / s_avg
+
+    lms_games = lms(n_found_games, n_found)
+    lms_reviews = lms(n_found_reviews, n_found)
+    
+    lms_avg = (lms_games + lms_reviews) / 2
+
+    weight_games = weight(lms_games, lms_avg)
+    weight_reviews = weight(lms_reviews, lms_avg)
+
+    print(n_found_games, n_found_reviews)
+    print(lms_games, lms_reviews)
+    print(weight_games, weight_reviews)
+
+    for result in games_results:
+        result['score'] *= weight_games
+
+    for result in review_results:
+        result['score'] *= weight_reviews
+
     result_tuples = []
-    # TODO: between
-    for game_doc in games_results:
-        result_tuples.append((game_doc, GAMES))
-    for review_doc in review_results:
-        result_tuples.append((review_doc, REVIEWS))
-    # TODO: between
+    result_tuples += map(lambda x: (x, GAMES), games_results)
+    result_tuples += map(lambda x: (x, REVIEWS), review_results)
+
+    result_tuples = sorted(result_tuples, key=lambda x: -x[0]['score'])
 
     return (n_found, result_tuples)
 
