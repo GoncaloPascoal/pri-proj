@@ -3,7 +3,9 @@
         "name": "/mlt",
         "class": "solr.MoreLikeThisHandler",
         "defaults": {
-            "mlt.fl": "name,steamspy_tags,review"
+            "mlt.fl": "name,steamspy_tags,review",
+            "mlt.boost": true,
+            "mlt.interestingTerms": "details"
         }
     }
 }

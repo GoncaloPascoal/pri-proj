@@ -3,7 +3,9 @@
         "name": "/mlt",
         "class": "solr.MoreLikeThisHandler",
         "defaults": {
-            "mlt.fl": "name,genres,steamspy_tags,short_description,wp_introduction"
+            "mlt.fl": "name,genres,steamspy_tags,short_description,wp_introduction",
+            "mlt.boost": true,
+            "mlt.interestingTerms": "details"
         }
     }
 }
