@@ -66,16 +66,15 @@ def print_review(review):
     pprint(review['review'], max_string=500)
     print('\n' + '\u2500' * 80 + '\n')
 
-def query(q, core, mlt=False):
+def query(q, core, mlt=False, mlt_params={}):
     '''
     Returns (n_found, documents), where documents are the solr_documents
     '''
     if mlt:
         url = f'http://localhost:8983/solr/{core}/mlt'
-        response_str = requests.get(url, params={
-            'q.op': 'OR',
-            'q': ' '.join(q),
-        })
+        mlt_params['q'] = q
+        mlt_params['q.op'] = 'OR'
+        response_str = requests.get(url, params=mlt_params)
     else:
         url = f'http://localhost:8983/solr/{core}/query'
         response_str = requests.post(url, data=json.dumps(q), headers={
@@ -87,9 +86,20 @@ def query(q, core, mlt=False):
         exit(1)
 
     response = json.loads(response_str.text)
+
+    if mlt:
+        interesting = response['interestingTerms']
+
+        interesting = sorted(zip(
+            [term for i, term in enumerate(interesting) if i % 2 == 0],
+            [score for i, score in enumerate(interesting) if i % 2 != 0]
+        ), key=lambda x: -x[1])
+
+        print(interesting)
+
     documents = response['response']['docs']
     n_found = response['response']['numFound']
-    return (n_found, documents)
+    return n_found, documents
 
 def fill(request, core):
     default_qf = {
@@ -118,9 +128,9 @@ def single_core_query(obj):
     print(f'[b yellow]{q_str}[/b yellow]')
 
     fill(q, core)
-    
-    (n_found, results) = query(q, core)
-    return (n_found, [(result, core) for result in results])
+
+    n_found, results = query(q, core)
+    return n_found, [(result, core) for result in results]
 
 def multi_core_query(obj):
     q = obj['q']
@@ -135,8 +145,8 @@ def multi_core_query(obj):
     fill(q_games  , GAMES  )
     fill(q_reviews, REVIEWS)
 
-    (n_found_games  ,  games_results) = query(q_games  , GAMES  )
-    (n_found_reviews, review_results) = query(q_reviews, REVIEWS)
+    n_found_games  , games_results  = query(q_games  , GAMES  )
+    n_found_reviews, review_results = query(q_reviews, REVIEWS)
     
     n_found = n_found_games + n_found_reviews
 
@@ -178,7 +188,7 @@ def multi_core_query(obj):
 
     result_tuples = sorted(result_tuples, key=lambda x: -x[0]['score'])
 
-    return (n_found, result_tuples)
+    return n_found, result_tuples
 
 def main():
     parser = ArgumentParser()
@@ -198,9 +208,9 @@ def main():
     multicore = query_json['core'] == None
 
     if multicore:
-        (n_found, results) = multi_core_query(query_json)
+        n_found, results = multi_core_query(query_json)
     else:
-        (n_found, results) = single_core_query(query_json)
+        n_found, results = single_core_query(query_json)
 
     print(f'[b green]Found {n_found} documents.[/b green]\n')
     for result, result_type in results:
@@ -229,7 +239,10 @@ def main():
         for idx in indices:
             appids.append('appid:' + str(results[idx][0]['appid']))
 
-        (n_found, results) = query(appids, query_json['core'], True)
+        mlt_params = query_json['mlt'] if 'mlt' in query_json else {}
+
+        n_found, results = query(appids, query_json['core'], mlt=True,
+            mlt_params=mlt_params)
         print(f'[b green]Found {n_found} documents.[/b green]\n')
         for result in results:
             print_result(result, query_json['core'])
