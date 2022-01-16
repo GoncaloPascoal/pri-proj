@@ -87,7 +87,7 @@ def query(q, core, mlt=False, mlt_params={}):
 
     response = json.loads(response_str.text)
 
-    if mlt:
+    if mlt and 'interestingTerms' in response:
         interesting = response['interestingTerms']
 
         interesting = sorted(zip(
@@ -105,7 +105,7 @@ def fill(request, core):
     default_qf = {
         GAMES: 'name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 '
                 'about_the_game^1.5 short_description detailed_description^0.8 '
-                'wp_gameplay^1 wp_introduction^1.5 wp_synopsis^2',
+                'wp_introduction^3 wp_gameplay^2 wp_synopsis',
         REVIEWS: 'review^4 steamspy_tags^2 developer name'
     }
 
@@ -173,9 +173,6 @@ def multi_core_query(obj):
     normalize_document_scores(games_results, min_games, max_games)
     normalize_document_scores(review_results, min_reviews, max_reviews)
 
-    print(n_found_games, n_found_reviews)
-    print(lms_games, lms_reviews)
-
     for result in games_results:
         result['score'] = weighted_document_score(result['score'], lms_games)
 
@@ -240,6 +237,14 @@ def main():
             appids.append('appid:' + str(results[idx][0]['appid']))
 
         mlt_params = query_json['mlt'] if 'mlt' in query_json else {}
+        
+        if 'mlt.fl' in mlt_params and not mlt_params['mlt.fl']:
+            mlt_params['mlt.fl'] = 'categories,genres,steamspy_tags,about_the_game,'\
+                'short_description,detailed_description,wp_introduction,wp_gameplay,wp_synopsis'
+        if 'mlt.qf' in mlt_params and not mlt_params['mlt.qf']:
+            mlt_params['mlt.qf'] = 'categories^1.5 genres^3 steamspy_tags^2 ' \
+                'about_the_game^1.5 short_description detailed_description^0.8 ' \
+                'wp_introduction^3 wp_gameplay^2 wp_synopsis'
 
         n_found, results = query(appids, query_json['core'], mlt=True,
             mlt_params=mlt_params)

@@ -1,0 +1,21 @@
+{
+    "core": "games",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "fps abilities",
+                "q.op": "AND",
+                "qf": "genres^4 steamspy_tags^3 about_the_game^2 detailed_description wp_gameplay wp_introduction^2",
+                "boost": null
+            }
+        }
+    },
+    "mlt": {
+        "mlt.fl": "genres,steamspy_tags,about_the_game,wp_introduction",
+        "mlt.qf": "steamspy_tags^10 genres^15 about_the_game^1.2 wp_introduction^1",
+        "mlt.maxdfpct": 75,
+        "mlt.mintf": 2,
+        "mlt.mindf": 100,
+        "mlt.maxqt": 250
+    }
+}
