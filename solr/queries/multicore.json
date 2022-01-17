@@ -1,11 +1,11 @@
 {
     "core": null,
-    "q": "flying dog",
+    "q": "challenge",
     "request_games": {
         "query": {
             "edismax": {
                 "q.op": "AND",
-                "qf": null,
+                "qf": "about_the_game^1.5 short_description detailed_description^0.8 wp_introduction^3 wp_gameplay^2 wp_synopsis",
                 "boost": null
             }
         }
@@ -14,7 +14,7 @@
         "query": {
             "edismax": {
                 "q.op": "AND",
-                "qf": null,
+                "qf": "review",
                 "boost": null
             }
         }
