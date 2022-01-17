@@ -28,11 +28,22 @@ def print_game_name(game):
 def print_game(game):
     print_game_name(game)
 
+    score = round(game['weighted_score'], 3)
     release_date = game['release_date'][:10]
     genres = game['genres']
     tags = game['steamspy_tags']
     price = game['price']
 
+    if score >= 0.9:
+        score_color = 'cyan'
+    elif score >= 0.7:
+        score_color = 'green'
+    elif score >= 0.4:
+        score_color = 'yellow'
+    else:
+        score_color = 'red'
+
+    print(f'- Weighted Score: [b][{score_color}]{score}[/{score_color}][/b]')
     print(f'- Released: [b][yellow]{release_date}[/yellow][/b]')
     print(f'- Genres: {genres}')
     print(f'- Tags: {tags}')
