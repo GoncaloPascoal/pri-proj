@@ -1,0 +1,13 @@
+{
+    "core": "reviews",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "immersion \"good graphics\" votes_up:[3 TO *]",
+                "q.op": "AND",
+                "qf": null,
+                "boost": null
+            }
+        }
+    }
+}

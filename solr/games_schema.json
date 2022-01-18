@@ -72,7 +72,8 @@
         {
             "name": "name",
             "type": "text_name",
-            "required": true
+            "required": true,
+            "termVectors": true
         },
         {
             "name": "release_date",
@@ -88,7 +89,8 @@
             "name": "developer",
             "type": "text_name",
             "required": true,
-            "multiValued": true
+            "multiValued": true,
+            "termVectors": true
         },
         {
             "name": "publisher",
@@ -117,13 +119,15 @@
             "name": "genres",
             "type": "text_name",
             "required": true,
-            "multiValued": true
+            "multiValued": true,
+            "termVectors": true
         },
         {
             "name": "steamspy_tags",
             "type": "text_name",
             "required": true,
-            "multiValued": true
+            "multiValued": true,
+            "termVectors": true
         },
         {
             "name": "achievements",
@@ -177,15 +181,18 @@
         },
         {
             "name": "detailed_description",
-            "type": "text_en"
+            "type": "text_en",
+            "termVectors": true
         },
         {
             "name": "short_description",
-            "type": "text_en"
+            "type": "text_en",
+            "termVectors": true
         },
         {
             "name": "about_the_game",
-            "type": "text_en"
+            "type": "text_en",
+            "termVectors": true
         },
         {
             "name": "main_time",
@@ -222,15 +229,18 @@
         },
         {
             "name": "wp_introduction",
-            "type": "text_en"
+            "type": "text_en",
+            "termVectors": true
         },
         {
             "name": "wp_gameplay",
-            "type": "text_en"
+            "type": "text_en",
+            "termVectors": true
         },
         {
             "name": "wp_synopsis",
-            "type": "text_en"
+            "type": "text_en",
+            "termVectors": true
         }
     ]
 }

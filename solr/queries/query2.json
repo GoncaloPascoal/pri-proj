@@ -1,0 +1,13 @@
+{
+    "core": "games",
+    "request": {
+        "query": {
+            "edismax": {
+                "query": "historical command army",
+                "q.op": "AND",
+                "qf": "name^10 developer publisher categories^1.5 genres^3 steamspy_tags^2 about_the_game^1.5 short_description detailed_description^0.8",
+                "boost": null
+            }
+        }
+    }
+}
